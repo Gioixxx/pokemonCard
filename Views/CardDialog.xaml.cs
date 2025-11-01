@@ -116,60 +116,88 @@ namespace PokemonCardManager.Views
             }
         }
 
-        private void BtnSave_Click(object sender, RoutedEventArgs e)
+        private void BtnSave_Click(object? sender, RoutedEventArgs? e)
         {
             // Reset evidenziazione errori
             ResetValidationErrors();
 
             // Validazione campi obbligatori
-            bool hasErrors = false;
+            var errors = new List<string>();
+
             if (string.IsNullOrWhiteSpace(txtName.Text))
             {
                 HighlightError(txtName);
-                hasErrors = true;
+                errors.Add("Il nome della carta è obbligatorio");
             }
             if (string.IsNullOrWhiteSpace(cmbSet.Text))
             {
                 HighlightError(cmbSet);
-                hasErrors = true;
+                errors.Add("Il set è obbligatorio");
             }
             if (string.IsNullOrWhiteSpace(txtNumber.Text))
             {
                 HighlightError(txtNumber);
-                hasErrors = true;
+                errors.Add("Il numero della carta è obbligatorio");
             }
 
-            if (hasErrors)
+            // Validazione prezzo di acquisto
+            if (!decimal.TryParse(txtPurchasePrice.Text, out decimal purchasePrice))
             {
-                MessageBox.Show("I campi Nome, Set e Numero sono obbligatori.", "Errore", MessageBoxButton.OK, MessageBoxImage.Error);
+                HighlightError(txtPurchasePrice);
+                errors.Add("Il prezzo di acquisto deve essere un numero valido");
+            }
+            else if (purchasePrice < 0)
+            {
+                HighlightError(txtPurchasePrice);
+                errors.Add("Il prezzo di acquisto non può essere negativo");
+            }
+
+            // Validazione prezzo attuale
+            if (!decimal.TryParse(txtCurrentPrice.Text, out decimal currentPrice))
+            {
+                HighlightError(txtCurrentPrice);
+                errors.Add("Il prezzo attuale deve essere un numero valido");
+            }
+            else if (currentPrice < 0)
+            {
+                HighlightError(txtCurrentPrice);
+                errors.Add("Il prezzo attuale non può essere negativo");
+            }
+
+            // Validazione quantità
+            if (!int.TryParse(txtQuantity.Text, out int quantity))
+            {
+                HighlightError(txtQuantity);
+                errors.Add("La quantità deve essere un numero intero valido");
+            }
+            else if (quantity < 1)
+            {
+                HighlightError(txtQuantity);
+                errors.Add("La quantità deve essere almeno 1");
+            }
+
+            if (errors.Count > 0)
+            {
+                string errorMessage = "Correggere i seguenti errori:\n\n• " + string.Join("\n• ", errors);
+                _logger?.LogWarning($"Card validation failed: {string.Join(", ", errors)}");
+                MessageBox.Show(errorMessage, "Errore di Validazione", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            // Aggiorna i dati della carta
-            CardData.Name = txtName.Text;
-            CardData.Set = cmbSet.Text;
-            CardData.Number = txtNumber.Text;
-            CardData.Rarity = (cmbRarity.SelectedItem as System.Windows.Controls.ComboBoxItem)?.Content.ToString();
-            CardData.Language = (cmbLanguage.SelectedItem as System.Windows.Controls.ComboBoxItem)?.Content.ToString();
-            CardData.Condition = (cmbCondition.SelectedItem as System.Windows.Controls.ComboBoxItem)?.Content.ToString();
-            
-            decimal purchasePrice;
-            if (decimal.TryParse(txtPurchasePrice.Text, out purchasePrice))
-                CardData.PurchasePrice = purchasePrice;
-            
+            // Aggiorna i dati della carta (validazione già superata)
+            CardData.Name = txtName.Text.Trim();
+            CardData.Set = cmbSet.Text.Trim();
+            CardData.Number = txtNumber.Text.Trim();
+            CardData.Rarity = (cmbRarity.SelectedItem as System.Windows.Controls.ComboBoxItem)?.Content.ToString() ?? string.Empty;
+            CardData.Language = (cmbLanguage.SelectedItem as System.Windows.Controls.ComboBoxItem)?.Content.ToString() ?? string.Empty;
+            CardData.Condition = (cmbCondition.SelectedItem as System.Windows.Controls.ComboBoxItem)?.Content.ToString() ?? string.Empty;
+            CardData.PurchasePrice = purchasePrice;
             CardData.PurchaseDate = dpPurchaseDate.SelectedDate;
-            CardData.Source = txtSource.Text;
-            
-            decimal currentPrice;
-            if (decimal.TryParse(txtCurrentPrice.Text, out currentPrice))
-                CardData.CurrentPrice = currentPrice;
-            
-            int quantity;
-            if (int.TryParse(txtQuantity.Text, out quantity) && quantity > 0)
-                CardData.Quantity = quantity;
-            else
-                CardData.Quantity = 1;
+            CardData.Source = txtSource.Text?.Trim() ?? string.Empty;
+            CardData.CurrentPrice = currentPrice;
+            CardData.Quantity = quantity;
 
+            _logger?.LogInformation($"Card saved: {CardData.Name} (Set: {CardData.Set}, Number: {CardData.Number})");
             DialogResult = true;
             Close();
         }
@@ -193,15 +221,24 @@ namespace PokemonCardManager.Views
 
         private void ResetValidationErrors()
         {
+            var borderBrush = (System.Windows.Media.Brush)FindResource("BorderColor");
+            var thickness = new Thickness(1);
+
             // Reset TextBox
-            txtName.BorderBrush = (System.Windows.Media.Brush)FindResource("BorderColor");
-            txtName.BorderThickness = new Thickness(1);
-            txtNumber.BorderBrush = (System.Windows.Media.Brush)FindResource("BorderColor");
-            txtNumber.BorderThickness = new Thickness(1);
-            
+            txtName.BorderBrush = borderBrush;
+            txtName.BorderThickness = thickness;
+            txtNumber.BorderBrush = borderBrush;
+            txtNumber.BorderThickness = thickness;
+            txtPurchasePrice.BorderBrush = borderBrush;
+            txtPurchasePrice.BorderThickness = thickness;
+            txtCurrentPrice.BorderBrush = borderBrush;
+            txtCurrentPrice.BorderThickness = thickness;
+            txtQuantity.BorderBrush = borderBrush;
+            txtQuantity.BorderThickness = thickness;
+
             // Reset ComboBox
-            cmbSet.BorderBrush = (System.Windows.Media.Brush)FindResource("BorderColor");
-            cmbSet.BorderThickness = new Thickness(1);
+            cmbSet.BorderBrush = borderBrush;
+            cmbSet.BorderThickness = thickness;
         }
 
         private void BtnCancel_Click(object sender, RoutedEventArgs e)

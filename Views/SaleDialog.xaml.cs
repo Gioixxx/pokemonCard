@@ -116,62 +116,94 @@ namespace PokemonCardManager.Views
             }
         }
 
-        private void BtnSave_Click(object sender, RoutedEventArgs e)
+        private void BtnSave_Click(object? sender, RoutedEventArgs? e)
         {
             // Reset evidenziazione errori
             ResetValidationErrors();
 
-            // Validazione campi obbligatori
-            bool hasErrors = false;
+            // Validazione campi
+            var errors = new System.Collections.Generic.List<string>();
+
+            // Validazione carta selezionata
             if (cmbCard.SelectedItem == null)
             {
                 HighlightError(cmbCard);
-                hasErrors = true;
+                errors.Add("Devi selezionare una carta");
             }
+
+            // Validazione data vendita
             if (!dpSaleDate.SelectedDate.HasValue)
             {
                 HighlightError(dpSaleDate);
-                hasErrors = true;
-            }
-            if (string.IsNullOrWhiteSpace(txtSalePrice.Text) || !decimal.TryParse(txtSalePrice.Text, out _))
-            {
-                HighlightError(txtSalePrice);
-                hasErrors = true;
-            }
-            if (string.IsNullOrWhiteSpace(txtQuantity.Text) || !int.TryParse(txtQuantity.Text, out _) || int.Parse(txtQuantity.Text) < 1)
-            {
-                HighlightError(txtQuantity);
-                hasErrors = true;
+                errors.Add("La data di vendita è obbligatoria");
             }
 
-            if (hasErrors)
+            // Validazione prezzo vendita
+            if (!decimal.TryParse(txtSalePrice.Text, out decimal salePrice))
             {
-                MessageBox.Show("I campi Carta, Data Vendita, Prezzo di Vendita e Quantità sono obbligatori.", "Errore", MessageBoxButton.OK, MessageBoxImage.Error);
+                HighlightError(txtSalePrice);
+                errors.Add("Il prezzo di vendita deve essere un numero valido");
+            }
+            else if (salePrice <= 0)
+            {
+                HighlightError(txtSalePrice);
+                errors.Add("Il prezzo di vendita deve essere maggiore di zero");
+            }
+
+            // Validazione commissione
+            if (!decimal.TryParse(txtFee.Text, out decimal fee))
+            {
+                HighlightError(txtFee);
+                errors.Add("La commissione deve essere un numero valido");
+            }
+            else if (fee < 0)
+            {
+                HighlightError(txtFee);
+                errors.Add("La commissione non può essere negativa");
+            }
+
+            // Validazione costo spedizione
+            if (!decimal.TryParse(txtShippingCost.Text, out decimal shippingCost))
+            {
+                HighlightError(txtShippingCost);
+                errors.Add("Il costo di spedizione deve essere un numero valido");
+            }
+            else if (shippingCost < 0)
+            {
+                HighlightError(txtShippingCost);
+                errors.Add("Il costo di spedizione non può essere negativo");
+            }
+
+            // Validazione quantità
+            if (!int.TryParse(txtQuantity.Text, out int quantity))
+            {
+                HighlightError(txtQuantity);
+                errors.Add("La quantità deve essere un numero intero valido");
+            }
+            else if (quantity < 1)
+            {
+                HighlightError(txtQuantity);
+                errors.Add("La quantità deve essere almeno 1");
+            }
+
+            if (errors.Count > 0)
+            {
+                string errorMessage = "Correggere i seguenti errori:\n\n• " + string.Join("\n• ", errors);
+                MessageBox.Show(errorMessage, "Errore di Validazione", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            // Aggiorna i dati della vendita
+            // Aggiorna i dati della vendita (validazione già superata)
             SaleData.Card = cmbCard.SelectedItem as Card;
-            SaleData.CardId = SaleData.Card.Id;
-            SaleData.SaleDate = dpSaleDate.SelectedDate.Value;
-            
-            decimal salePrice;
-            if (decimal.TryParse(txtSalePrice.Text, out salePrice))
-                SaleData.SalePrice = salePrice;
-            
-            decimal fee;
-            if (decimal.TryParse(txtFee.Text, out fee))
-                SaleData.Fee = fee;
-            
-            decimal shippingCost;
-            if (decimal.TryParse(txtShippingCost.Text, out shippingCost))
-                SaleData.ShippingCost = shippingCost;
-            
-            int quantity;
-            if (int.TryParse(txtQuantity.Text, out quantity) && quantity > 0)
-                SaleData.Quantity = quantity;
-            else
-                SaleData.Quantity = 1;
+            if (SaleData.Card != null)
+            {
+                SaleData.CardId = SaleData.Card.Id;
+            }
+            SaleData.SaleDate = dpSaleDate.SelectedDate!.Value;
+            SaleData.SalePrice = salePrice;
+            SaleData.Fee = fee;
+            SaleData.ShippingCost = shippingCost;
+            SaleData.Quantity = quantity;
 
             DialogResult = true;
             Close();
@@ -202,15 +234,22 @@ namespace PokemonCardManager.Views
 
         private void ResetValidationErrors()
         {
+            var borderBrush = (System.Windows.Media.Brush)FindResource("BorderColor");
+            var thickness = new Thickness(1);
+
             // Reset tutti i controlli
-            cmbCard.BorderBrush = (System.Windows.Media.Brush)FindResource("BorderColor");
-            cmbCard.BorderThickness = new Thickness(1);
-            dpSaleDate.BorderBrush = (System.Windows.Media.Brush)FindResource("BorderColor");
-            dpSaleDate.BorderThickness = new Thickness(1);
-            txtSalePrice.BorderBrush = (System.Windows.Media.Brush)FindResource("BorderColor");
-            txtSalePrice.BorderThickness = new Thickness(1);
-            txtQuantity.BorderBrush = (System.Windows.Media.Brush)FindResource("BorderColor");
-            txtQuantity.BorderThickness = new Thickness(1);
+            cmbCard.BorderBrush = borderBrush;
+            cmbCard.BorderThickness = thickness;
+            dpSaleDate.BorderBrush = borderBrush;
+            dpSaleDate.BorderThickness = thickness;
+            txtSalePrice.BorderBrush = borderBrush;
+            txtSalePrice.BorderThickness = thickness;
+            txtFee.BorderBrush = borderBrush;
+            txtFee.BorderThickness = thickness;
+            txtShippingCost.BorderBrush = borderBrush;
+            txtShippingCost.BorderThickness = thickness;
+            txtQuantity.BorderBrush = borderBrush;
+            txtQuantity.BorderThickness = thickness;
         }
 
         private void BtnCancel_Click(object sender, RoutedEventArgs e)
