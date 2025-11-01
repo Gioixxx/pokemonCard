@@ -60,9 +60,9 @@ namespace PokemonCardManager.Views
             }
         }
 
-        private void LoadCards()
+        private async void LoadCards()
         {
-            var cards = _cardService.GetAllCards();
+            var cards = await _cardService.GetAllCardsAsync();
             cmbCard.ItemsSource = cards;
         }
 

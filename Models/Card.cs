@@ -43,6 +43,10 @@ namespace PokemonCardManager.Models
         [Range(1, int.MaxValue, ErrorMessage = "La quantità deve essere almeno 1")]
         public int Quantity { get; set; } = 1;
         
+        // Optimistic Concurrency Control
+        [Timestamp]
+        public byte[] RowVersion { get; set; }
+        
         // Proprietà calcolate
         public decimal TotalValue => CurrentPrice * Quantity;
         

@@ -4,16 +4,23 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:PokemonCardManager.Views"
+      xmlns:vm="clr-namespace:PokemonCardManager.ViewModels"
       mc:Ignorable="d" 
       d:DesignHeight="650" d:DesignWidth="1060"
       Title="Inventario"
       Background="{StaticResource BackgroundColor}">
+    <Page.Resources>
+        <vm:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <vm:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
+        <vm:GreaterThanOneToVisibilityConverter x:Key="GreaterThanOneToVisibilityConverter"/>
+    </Page.Resources>
 
     <Grid Margin="30">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
@@ -31,13 +38,15 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
                 <TextBox Grid.Column="0" 
                          x:Name="txtSearch" 
                          Margin="0,0,15,0" 
                          Style="{StaticResource TextBoxStyle}"
-                         TextChanged="TxtSearch_TextChanged">
+                         TextChanged="TxtSearch_TextChanged"
+                         Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}">
                     <TextBox.ToolTip>
                         <ToolTip Content="Cerca per nome, set o numero..."/>
                     </TextBox.ToolTip>
@@ -54,11 +63,22 @@
                     <ComboBoxItem Content="Per lingua"/>
                     <ComboBoxItem Content="Per condizione"/>
                 </ComboBox>
-                
+
                 <Button Grid.Column="2" 
+                        Content="🔄 Aggiorna" 
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Command="{Binding RefreshCommand}"
+                        Margin="0,0,15,0"
+                        IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBooleanConverter}}">
+                    <Button.ToolTip>
+                        <ToolTip Content="Ricarica i dati dal database"/>
+                    </Button.ToolTip>
+                </Button>
+                
+                <Button Grid.Column="3" 
                         Content="➕ Aggiungi Carta" 
                         Style="{StaticResource PrimaryButtonStyle}"
-                        Click="BtnAddCard_Click">
+                        Command="{Binding AddCardCommand}">
                     <Button.ToolTip>
                         <ToolTip Content="Aggiungi una nuova carta alla collezione (Ctrl+N)"/>
                     </Button.ToolTip>
@@ -66,50 +86,147 @@
             </Grid>
         </Border>
 
-        <!-- Tabella carte -->
-        <Border Grid.Row="2" 
+        <!-- Tabella carte con loading indicator -->
+        <Grid Grid.Row="2" Margin="0,0,0,20">
+            <Border Style="{StaticResource CardStyle}" Padding="0">
+                <Grid>
+                    <DataGrid x:Name="dgCards" 
+                             Style="{StaticResource DataGridStyle}" 
+                             ItemsSource="{Binding Cards}" 
+                             SelectionChanged="DgCards_SelectionChanged"
+                             ColumnHeaderStyle="{StaticResource DataGridColumnHeaderStyle}"
+                             EnableRowVirtualization="True"
+                             EnableColumnVirtualization="True"
+                             VirtualizingPanel.IsVirtualizing="True"
+                             VirtualizingPanel.VirtualizationMode="Recycling">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Nome" Binding="{Binding Name}" Width="*"/>
+                            <DataGridTextColumn Header="Set" Binding="{Binding Set}" Width="120"/>
+                            <DataGridTextColumn Header="Numero" Binding="{Binding Number}" Width="80"/>
+                            <DataGridTextColumn Header="Rarità" Binding="{Binding Rarity}" Width="100"/>
+                            <DataGridTextColumn Header="Lingua" Binding="{Binding Language}" Width="80"/>
+                            <DataGridTextColumn Header="Condizione" Binding="{Binding Condition}" Width="100"/>
+                            <DataGridTextColumn Header="Prezzo Acquisto" Binding="{Binding PurchasePrice, StringFormat=€ {0:N2}}" Width="130"/>
+                            <DataGridTextColumn Header="Prezzo Attuale" Binding="{Binding CurrentPrice, StringFormat=€ {0:N2}}" Width="130"/>
+                            <DataGridTextColumn Header="Quantità" Binding="{Binding Quantity}" Width="90"/>
+                            <DataGridTextColumn Header="Valore Totale" Binding="{Binding TotalValue, StringFormat=€ {0:N2}}" Width="130"/>
+                            <DataGridTextColumn Header="Profitto Stimato" Binding="{Binding EstimatedProfit, StringFormat=€ {0:N2}}" Width="140"/>
+                            <DataGridTemplateColumn Width="120" Header="Azioni">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                            <Button Content="✏️" 
+                                                    Style="{StaticResource IconButtonStyle}"
+                                                    ToolTip="Modifica carta"
+                                                    Command="{Binding DataContext.EditCardCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                    CommandParameter="{Binding}"/>
+                                            <Button Content="🗑️" 
+                                                    Style="{StaticResource IconButtonStyle}"
+                                                    ToolTip="Elimina carta"
+                                                    Command="{Binding DataContext.DeleteCardCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                    CommandParameter="{Binding}"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    
+                    <!-- Loading Overlay -->
+                    <Border Background="#CC000000" 
+                            Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"
+                            VerticalAlignment="Stretch"
+                            HorizontalAlignment="Stretch">
+                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                            <TextBlock Text="⏳ Caricamento..." 
+                                     Foreground="White" 
+                                     FontSize="16" 
+                                     Margin="0,0,0,10"/>
+                            <ProgressBar IsIndeterminate="True" 
+                                        Width="200" 
+                                        Height="4"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- Paginazione -->
+        <Border Grid.Row="3" 
                 Style="{StaticResource CardStyle}" 
                 Margin="0,0,0,20"
-                Padding="0">
-            <DataGrid x:Name="dgCards" 
-                     Style="{StaticResource DataGridStyle}" 
-                     ItemsSource="{Binding Cards}" 
-                     SelectionChanged="DgCards_SelectionChanged"
-                     ColumnHeaderStyle="{StaticResource DataGridColumnHeaderStyle}">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="Nome" Binding="{Binding Name}" Width="*"/>
-                    <DataGridTextColumn Header="Set" Binding="{Binding Set}" Width="120"/>
-                    <DataGridTextColumn Header="Numero" Binding="{Binding Number}" Width="80"/>
-                    <DataGridTextColumn Header="Rarità" Binding="{Binding Rarity}" Width="100"/>
-                    <DataGridTextColumn Header="Lingua" Binding="{Binding Language}" Width="80"/>
-                    <DataGridTextColumn Header="Condizione" Binding="{Binding Condition}" Width="100"/>
-                    <DataGridTextColumn Header="Prezzo Acquisto" Binding="{Binding PurchasePrice, StringFormat=€ {0:N2}}" Width="130"/>
-                    <DataGridTextColumn Header="Prezzo Attuale" Binding="{Binding CurrentPrice, StringFormat=€ {0:N2}}" Width="130"/>
-                    <DataGridTextColumn Header="Quantità" Binding="{Binding Quantity}" Width="90"/>
-                    <DataGridTextColumn Header="Valore Totale" Binding="{Binding TotalValue, StringFormat=€ {0:N2}}" Width="130"/>
-                    <DataGridTextColumn Header="Profitto Stimato" Binding="{Binding EstimatedProfit, StringFormat=€ {0:N2}}" Width="140"/>
-                    <DataGridTemplateColumn Width="120" Header="Azioni">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                    <Button Content="✏️" 
-                                            Style="{StaticResource IconButtonStyle}"
-                                            ToolTip="Modifica carta"
-                                            Click="BtnEditCard_Click"/>
-                                    <Button Content="🗑️" 
-                                            Style="{StaticResource IconButtonStyle}"
-                                            ToolTip="Elimina carta"
-                                            Click="BtnDeleteCard_Click"/>
-                                </StackPanel>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-                </DataGrid.Columns>
-            </DataGrid>
+                Visibility="{Binding TotalPages, Converter={StaticResource GreaterThanOneToVisibilityConverter}}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Page Size Selector -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,20,0">
+                    <TextBlock Text="Elementi per pagina:" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                    <ComboBox Width="80" 
+                             SelectedValue="{Binding PageSize, UpdateSourceTrigger=PropertyChanged}"
+                             SelectedValuePath="Tag">
+                        <ComboBoxItem Tag="25">25</ComboBoxItem>
+                        <ComboBoxItem Tag="50" IsSelected="True">50</ComboBoxItem>
+                        <ComboBoxItem Tag="100">100</ComboBoxItem>
+                        <ComboBoxItem Tag="200">200</ComboBoxItem>
+                    </ComboBox>
+                </StackPanel>
+
+                <!-- Page Info and Navigation -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding PageInfo}" 
+                             VerticalAlignment="Center" 
+                             Margin="0,0,20,0"
+                             FontWeight="Medium"/>
+                    
+                    <Button Content="⏮" 
+                          Command="{Binding FirstPageCommand}" 
+                          Style="{StaticResource IconButtonStyle}"
+                          ToolTip="Prima pagina"
+                          Margin="0,0,5,0"/>
+                    <Button Content="◀" 
+                          Command="{Binding PreviousPageCommand}" 
+                          Style="{StaticResource IconButtonStyle}"
+                          ToolTip="Pagina precedente"
+                          Margin="0,0,5,0"/>
+                    <TextBox Text="{Binding CurrentPage, UpdateSourceTrigger=LostFocus}" 
+                           Width="50" 
+                           TextAlignment="Center"
+                           Margin="5,0"
+                           VerticalContentAlignment="Center"/>
+                    <TextBlock Text="di" VerticalAlignment="Center" Margin="5,0"/>
+                    <TextBlock Text="{Binding TotalPages}" 
+                             VerticalAlignment="Center" 
+                             FontWeight="Bold"
+                             Margin="5,0,5,0"/>
+                    <Button Content="▶" 
+                          Command="{Binding NextPageCommand}" 
+                          Style="{StaticResource IconButtonStyle}"
+                          ToolTip="Pagina successiva"
+                          Margin="5,0,5,0"/>
+                    <Button Content="⏭" 
+                          Command="{Binding LastPageCommand}" 
+                          Style="{StaticResource IconButtonStyle}"
+                          ToolTip="Ultima pagina"
+                          Margin="5,0"/>
+                </StackPanel>
+
+                <!-- Status Message -->
+                <TextBlock Grid.Column="2" 
+                         Text="{Binding StatusMessage}" 
+                         VerticalAlignment="Center"
+                         Foreground="{StaticResource AccentColor}"
+                         FontStyle="Italic"
+                         Margin="20,0,0,0"/>
+            </Grid>
         </Border>
 
         <!-- Riepilogo Statistiche -->
-        <Grid Grid.Row="3">
+        <Grid Grid.Row="4">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>

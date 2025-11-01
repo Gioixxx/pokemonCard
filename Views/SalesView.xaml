@@ -34,21 +34,19 @@
                 </Grid.ColumnDefinitions>
 
                 <TextBox Grid.Column="0" 
-                         x:Name="txtSearch" 
                          Margin="0,0,15,0" 
                          Style="{StaticResource TextBoxStyle}"
-                         TextChanged="TxtSearch_TextChanged">
+                         Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}">
                     <TextBox.ToolTip>
                         <ToolTip Content="Cerca per nome carta o set..."/>
                     </TextBox.ToolTip>
                 </TextBox>
                 
                 <DatePicker Grid.Column="1" 
-                           x:Name="dpDateFilter" 
                            Width="180" 
                            Margin="0,0,15,0" 
                            Style="{StaticResource DatePickerStyle}"
-                           SelectedDateChanged="DpDateFilter_SelectedDateChanged">
+                           SelectedDate="{Binding DateFilter, UpdateSourceTrigger=PropertyChanged}">
                     <DatePicker.ToolTip>
                         <ToolTip Content="Filtra per data vendita"/>
                     </DatePicker.ToolTip>
@@ -57,7 +55,7 @@
                 <Button Grid.Column="2" 
                         Content="➕ Registra Vendita" 
                         Style="{StaticResource PrimaryButtonStyle}"
-                        Click="BtnAddSale_Click">
+                        Command="{Binding AddSaleCommand}">
                     <Button.ToolTip>
                         <ToolTip Content="Registra una nuova vendita nella collezione"/>
                     </Button.ToolTip>
@@ -73,7 +71,11 @@
             <DataGrid x:Name="dgSales" 
                      Style="{StaticResource DataGridStyle}" 
                      ItemsSource="{Binding Sales}"
-                     ColumnHeaderStyle="{StaticResource DataGridColumnHeaderStyle}">
+                     ColumnHeaderStyle="{StaticResource DataGridColumnHeaderStyle}"
+                     EnableRowVirtualization="True"
+                     EnableColumnVirtualization="True"
+                     VirtualizingPanel.IsVirtualizing="True"
+                     VirtualizingPanel.VirtualizationMode="Recycling">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Data" Binding="{Binding SaleDate, StringFormat=dd/MM/yyyy}" Width="110"/>
                     <DataGridTextColumn Header="Nome Carta" Binding="{Binding Card.Name}" Width="*"/>
@@ -115,8 +117,7 @@
                                FontSize="13" 
                                FontWeight="Medium" 
                                Opacity="0.9"/>
-                    <TextBlock x:Name="txtTotalSales" 
-                               Text="0" 
+                    <TextBlock Text="{Binding TotalSalesCount}" 
                                Foreground="White" 
                                FontSize="28" 
                                FontWeight="Bold" 
@@ -133,8 +134,7 @@
                                FontSize="13" 
                                FontWeight="Medium" 
                                Opacity="0.9"/>
-                    <TextBlock x:Name="txtTotalRevenue" 
-                               Text="€ 0,00" 
+                    <TextBlock Text="{Binding TotalRevenueFormatted}" 
                                Foreground="White" 
                                FontSize="28" 
                                FontWeight="Bold" 
@@ -151,8 +151,7 @@
                                FontSize="13" 
                                FontWeight="Medium" 
                                Opacity="0.9"/>
-                    <TextBlock x:Name="txtTotalProfit" 
-                               Text="€ 0,00" 
+                    <TextBlock Text="{Binding TotalProfitFormatted}" 
                                Foreground="White" 
                                FontSize="28" 
                                FontWeight="Bold" 

@@ -43,8 +43,7 @@
                                    FontSize="13" 
                                    FontWeight="Medium" 
                                    Opacity="0.95"/>
-                        <TextBlock x:Name="txtCollectionValue" 
-                                   Text="€ 0,00" 
+                        <TextBlock Text="{Binding CollectionValueFormatted}" 
                                    Foreground="White" 
                                    FontSize="32" 
                                    FontWeight="Bold" 
@@ -62,8 +61,7 @@
                                    FontSize="13" 
                                    FontWeight="Medium" 
                                    Opacity="0.95"/>
-                        <TextBlock x:Name="txtTotalSpent" 
-                                   Text="€ 0,00" 
+                        <TextBlock Text="{Binding TotalSpentFormatted}" 
                                    Foreground="White" 
                                    FontSize="32" 
                                    FontWeight="Bold" 
@@ -81,8 +79,7 @@
                                    FontSize="13" 
                                    FontWeight="Medium" 
                                    Opacity="0.95"/>
-                        <TextBlock x:Name="txtTotalEarned" 
-                                   Text="€ 0,00" 
+                        <TextBlock Text="{Binding TotalEarnedFormatted}" 
                                    Foreground="White" 
                                    FontSize="32" 
                                    FontWeight="Bold" 
@@ -100,8 +97,7 @@
                                    FontSize="13" 
                                    FontWeight="Medium" 
                                    Opacity="0.95"/>
-                        <TextBlock x:Name="txtAverageROI" 
-                                   Text="0%" 
+                        <TextBlock Text="{Binding AverageROIFormatted}" 
                                    Foreground="White" 
                                    FontSize="32" 
                                    FontWeight="Bold" 

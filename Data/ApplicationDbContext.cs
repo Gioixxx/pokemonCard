@@ -23,6 +23,15 @@ namespace PokemonCardManager.Data
                 .WithMany()
                 .HasForeignKey(s => s.CardId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // Configurazione RowVersion per optimistic concurrency
+            modelBuilder.Entity<Card>()
+                .Property(c => c.RowVersion)
+                .IsRowVersion();
+
+            modelBuilder.Entity<Sale>()
+                .Property(s => s.RowVersion)
+                .IsRowVersion();
         }
     }
 }
