@@ -1,6 +1,14 @@
 using PokemonCardManager.Models;
+using PokemonCardManager.Models.Api;
+using PokemonCardManager.Services;
 using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Media.Imaging;
 
 namespace PokemonCardManager.Views
 {
@@ -8,12 +16,21 @@ namespace PokemonCardManager.Views
     {
         public Card CardData { get; private set; }
         private bool isEditMode = false;
+        private readonly IPokeApiService? _pokeApiService;
+        private readonly PokemonSetService? _setService;
 
         public CardDialog()
         {
             InitializeComponent();
             CardData = new Card();
             dpPurchaseDate.SelectedDate = DateTime.Today;
+            
+            // Recupera i servizi dal DI container
+            if (App.ServiceProvider != null)
+            {
+                _pokeApiService = App.ServiceProvider.GetService(typeof(IPokeApiService)) as IPokeApiService;
+                _setService = App.ServiceProvider.GetService(typeof(PokemonSetService)) as PokemonSetService;
+            }
         }
 
         public CardDialog(Card card)
@@ -22,13 +39,21 @@ namespace PokemonCardManager.Views
             CardData = card;
             isEditMode = true;
             txtTitle.Text = "Modifica Carta";
+            
+            // Recupera i servizi dal DI container
+            if (App.ServiceProvider != null)
+            {
+                _pokeApiService = App.ServiceProvider.GetService(typeof(IPokeApiService)) as IPokeApiService;
+                _setService = App.ServiceProvider.GetService(typeof(PokemonSetService)) as PokemonSetService;
+            }
+            
             LoadCardData();
         }
 
         private void LoadCardData()
         {
             txtName.Text = CardData.Name;
-            txtSet.Text = CardData.Set;
+            SetComboBoxValue(cmbSet, CardData.Set);
             txtNumber.Text = CardData.Number;
             
             // Imposta i valori delle ComboBox
@@ -62,7 +87,7 @@ namespace PokemonCardManager.Views
         {
             // Validazione campi obbligatori
             if (string.IsNullOrWhiteSpace(txtName.Text) || 
-                string.IsNullOrWhiteSpace(txtSet.Text) || 
+                string.IsNullOrWhiteSpace(cmbSet.Text) || 
                 string.IsNullOrWhiteSpace(txtNumber.Text))
             {
                 MessageBox.Show("I campi Nome, Set e Numero sono obbligatori.", "Errore", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -71,7 +96,7 @@ namespace PokemonCardManager.Views
 
             // Aggiorna i dati della carta
             CardData.Name = txtName.Text;
-            CardData.Set = txtSet.Text;
+            CardData.Set = cmbSet.Text;
             CardData.Number = txtNumber.Text;
             CardData.Rarity = (cmbRarity.SelectedItem as System.Windows.Controls.ComboBoxItem)?.Content.ToString();
             CardData.Language = (cmbLanguage.SelectedItem as System.Windows.Controls.ComboBoxItem)?.Content.ToString();
@@ -102,6 +127,287 @@ namespace PokemonCardManager.Views
         {
             DialogResult = false;
             Close();
+        }
+
+        private async void BtnSearchPokemon_Click(object sender, RoutedEventArgs e)
+        {
+            if (_pokeApiService == null)
+            {
+                MessageBox.Show("Servizio PokéAPI non disponibile.", "Errore", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            string pokemonName = txtName.Text.Trim();
+            if (string.IsNullOrWhiteSpace(pokemonName))
+            {
+                MessageBox.Show("Inserisci un nome Pokémon per cercare.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            btnSearchPokemon.IsEnabled = false;
+            btnSearchPokemon.Content = "Cercando...";
+
+            try
+            {
+                var pokemon = await _pokeApiService.GetPokemonByNameAsync(pokemonName);
+                
+                if (pokemon == null)
+                {
+                    MessageBox.Show($"Pokémon '{pokemonName}' non trovato su PokéAPI.\n\nProva con il nome in inglese (es: 'pikachu', 'charizard').", 
+                        "Pokémon non trovato", MessageBoxButton.OK, MessageBoxImage.Information);
+                    
+                    pokemonImageContainer.Visibility = Visibility.Collapsed;
+                    return;
+                }
+
+                // Recupera informazioni sulla specie per ottenere la generazione
+                PokemonSpeciesDto? species = null;
+                if (pokemon.Species != null && !string.IsNullOrEmpty(pokemon.Species.Name))
+                {
+                    species = await _pokeApiService.GetPokemonSpeciesByNameAsync(pokemon.Species.Name);
+                }
+
+                // Popola i campi del form con i dati del Pokémon
+                PopulateFormFields(pokemon, species);
+
+                // Mostra informazioni del Pokémon
+                string types = string.Join(", ", pokemon.Types.Select(t => CapitalizeFirst(t.Type.Name)));
+                string info = $"#{pokemon.Id} - {CapitalizeFirst(pokemon.Name)}\nTipi: {types}";
+                
+                if (pokemon.Height > 0)
+                    info += $"\nAltezza: {pokemon.Height / 10.0}m";
+                if (pokemon.Weight > 0)
+                    info += $" | Peso: {pokemon.Weight / 10.0}kg";
+
+                txtPokemonInfo.Text = info;
+                pokemonImageContainer.Visibility = Visibility.Visible;
+
+                // Carica l'immagine del Pokémon
+                if (!string.IsNullOrEmpty(pokemon.Sprites?.FrontDefault))
+                {
+                    await LoadPokemonImageAsync(pokemon.Sprites.FrontDefault);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Errore durante la ricerca: {ex.Message}", "Errore", MessageBoxButton.OK, MessageBoxImage.Error);
+                pokemonImageContainer.Visibility = Visibility.Collapsed;
+            }
+            finally
+            {
+                btnSearchPokemon.IsEnabled = true;
+                btnSearchPokemon.Content = "🔍 Cerca";
+            }
+        }
+
+        private async Task LoadPokemonImageAsync(string imageUrl)
+        {
+            try
+            {
+                using (var httpClient = new HttpClient())
+                {
+                    var response = await httpClient.GetByteArrayAsync(imageUrl);
+                    var bitmap = new BitmapImage();
+                    
+                    using (var stream = new MemoryStream(response))
+                    {
+                        bitmap.BeginInit();
+                        bitmap.StreamSource = stream;
+                        bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                        bitmap.EndInit();
+                        bitmap.Freeze();
+                    }
+                    
+                    imgPokemon.Source = bitmap;
+                }
+            }
+            catch (Exception)
+            {
+                // Ignora errori di caricamento immagine
+                imgPokemon.Source = null;
+            }
+        }
+
+        private void PopulateFormFields(PokemonDto pokemon, PokemonSpeciesDto? species = null)
+        {
+            // Popola il campo Nome
+            txtName.Text = CapitalizeFirst(pokemon.Name);
+
+            // Popola il campo Numero con l'ID nazionale del Pokémon (solo se vuoto)
+            if (string.IsNullOrWhiteSpace(txtNumber.Text))
+            {
+                txtNumber.Text = pokemon.Id.ToString();
+            }
+
+            // Suggerisce una rarità basata su caratteristiche del Pokémon (solo se non già selezionata)
+            if (cmbRarity.SelectedItem == null)
+            {
+                string suggestedRarity = SuggestRarity(pokemon);
+                SetComboBoxValue(cmbRarity, suggestedRarity);
+            }
+
+            // Popola il ComboBox del Set con i set disponibili per questa generazione
+            PopulateSetComboBox(species, pokemon.Id);
+        }
+
+        private void PopulateSetComboBox(PokemonSpeciesDto? species, int pokemonId)
+        {
+            if (_setService == null)
+                return;
+
+            List<string> availableSets;
+            
+            if (species != null && species.Generation != null)
+            {
+                availableSets = _setService.GetSetsForGeneration(species.Generation.Name);
+            }
+            else
+            {
+                availableSets = _setService.GetSetsForPokemonId(pokemonId);
+            }
+
+            // Pulisci e popola il ComboBox
+            cmbSet.Items.Clear();
+            foreach (var set in availableSets)
+            {
+                cmbSet.Items.Add(set);
+            }
+
+            // Se il campo è vuoto, seleziona il primo set suggerito
+            if (string.IsNullOrWhiteSpace(cmbSet.Text) && availableSets.Count > 0)
+            {
+                string suggestedSet = species != null 
+                    ? SuggestSetFromGeneration(species, pokemonId) 
+                    : SuggestSetFromId(pokemonId);
+                
+                if (availableSets.Contains(suggestedSet))
+                {
+                    cmbSet.Text = suggestedSet;
+                }
+                else if (availableSets.Count > 0)
+                {
+                    cmbSet.Text = availableSets[0];
+                }
+            }
+        }
+
+        private string SuggestSetFromGeneration(PokemonSpeciesDto species, int pokemonId)
+        {
+            // Estrae il numero della generazione dall'URL (es: "generation-i" -> 1)
+            string? generationName = species.Generation?.Name;
+            
+            if (string.IsNullOrEmpty(generationName))
+            {
+                // Fallback: usa l'ID per stimare la generazione
+                return SuggestSetFromId(pokemonId);
+            }
+
+            // Mappa generazioni a set comuni
+            if (generationName.Contains("generation-i") || generationName.Contains("generation-1"))
+            {
+                return "Base Set";
+            }
+            else if (generationName.Contains("generation-ii") || generationName.Contains("generation-2"))
+            {
+                return "Jungle";
+            }
+            else if (generationName.Contains("generation-iii") || generationName.Contains("generation-3"))
+            {
+                return "Ruby & Sapphire";
+            }
+            else if (generationName.Contains("generation-iv") || generationName.Contains("generation-4"))
+            {
+                return "Diamond & Pearl";
+            }
+            else if (generationName.Contains("generation-v") || generationName.Contains("generation-5"))
+            {
+                return "Black & White";
+            }
+            else if (generationName.Contains("generation-vi") || generationName.Contains("generation-6"))
+            {
+                return "XY";
+            }
+            else if (generationName.Contains("generation-vii") || generationName.Contains("generation-7"))
+            {
+                return "Sun & Moon";
+            }
+            else if (generationName.Contains("generation-viii") || generationName.Contains("generation-8"))
+            {
+                return "Sword & Shield";
+            }
+            else if (generationName.Contains("generation-ix") || generationName.Contains("generation-9"))
+            {
+                return "Scarlet & Violet";
+            }
+
+            return SuggestSetFromId(pokemonId);
+        }
+
+        private string SuggestSetFromId(int pokemonId)
+        {
+            // Stima la generazione basata sull'ID nazionale
+            if (pokemonId <= 151)
+                return "Base Set";
+            else if (pokemonId <= 251)
+                return "Jungle";
+            else if (pokemonId <= 386)
+                return "Ruby & Sapphire";
+            else if (pokemonId <= 493)
+                return "Diamond & Pearl";
+            else if (pokemonId <= 649)
+                return "Black & White";
+            else if (pokemonId <= 721)
+                return "XY";
+            else if (pokemonId <= 809)
+                return "Sun & Moon";
+            else if (pokemonId <= 905)
+                return "Sword & Shield";
+            else
+                return "Scarlet & Violet";
+        }
+
+        private string SuggestRarity(PokemonDto pokemon)
+        {
+            // Logica per suggerire la rarità basata su:
+            // - ID nazionale (i primi sono più comuni)
+            // - Stats totali (i leggendari hanno stats più alte)
+            // - Tipo (alcuni tipi sono più rari)
+
+            int totalStats = pokemon.Stats?.Sum(s => s.BaseStat) ?? 0;
+
+            // Leggendari tipicamente hanno ID sopra 150 e stats molto alte
+            if (pokemon.Id > 150 && totalStats > 500)
+            {
+                return "Ultra Rare";
+            }
+
+            // Pokémon con stats molto alte sono probabilmente rari
+            if (totalStats > 450)
+            {
+                return "Holo Rare";
+            }
+
+            // Pokémon della prima generazione (1-151) sono spesso più comuni nelle carte base
+            if (pokemon.Id <= 151)
+            {
+                return "Common";
+            }
+
+            // Default per Pokémon intermedi
+            if (totalStats > 350)
+            {
+                return "Rare";
+            }
+
+            return "Uncommon";
+        }
+
+        private string CapitalizeFirst(string text)
+        {
+            if (string.IsNullOrEmpty(text))
+                return text;
+            
+            return char.ToUpper(text[0]) + text.Substring(1).ToLower();
         }
     }
 }

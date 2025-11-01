@@ -5,80 +5,265 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PokemonCardManager.Views"
         mc:Ignorable="d"
-        Title="Dettagli Carta" Height="500" Width="500"
-        WindowStartupLocation="CenterOwner">
-    <Grid Margin="20">
+        Title="Dettagli Carta" Height="750" Width="700"
+        WindowStartupLocation="CenterOwner"
+        Background="{StaticResource BackgroundColor}"
+        MinHeight="600" MinWidth="550">
+    <Grid Margin="25">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Intestazione -->
-        <TextBlock Grid.Row="0" x:Name="txtTitle" Text="Aggiungi Carta" FontSize="20" FontWeight="Bold" Margin="0,0,0,15"/>
+        <!-- Intestazione con gradiente -->
+        <Border Grid.Row="0" Background="{StaticResource PrimaryGradient}" 
+                CornerRadius="12" Padding="20,15" Margin="0,0,0,20">
+            <TextBlock x:Name="txtTitle" Text="Aggiungi Carta" 
+                       FontSize="24" FontWeight="Bold" 
+                       Foreground="White" TextAlignment="Center"/>
+        </Border>
 
         <!-- Form -->
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" 
+                      Padding="0,0,5,0">
             <StackPanel>
-                <TextBlock Text="Nome Carta *" Margin="0,5,0,2"/>
-                <TextBox x:Name="txtName" Margin="0,0,0,10"/>
+                <!-- Sezione Ricerca Pokémon -->
+                <Border Style="{StaticResource CardStyle}" Margin="0,0,0,15">
+                    <StackPanel>
+                        <TextBlock Text="Ricerca Pokémon" 
+                                   FontSize="16" FontWeight="SemiBold" 
+                                   Foreground="{StaticResource TextPrimaryColor}"
+                                   Margin="0,0,0,12"/>
+                        
+                        <TextBlock Text="Nome Carta *" 
+                                   FontSize="13" FontWeight="Medium"
+                                   Foreground="{StaticResource TextSecondaryColor}"
+                                   Margin="0,0,0,6"/>
+                        <Grid Margin="0,0,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox x:Name="txtName" Grid.Column="0" 
+                                     Style="{StaticResource TextBoxStyle}"
+                                     Margin="0,0,8,0"/>
+                            <Button x:Name="btnSearchPokemon" Grid.Column="1" 
+                                    Content="🔍 Cerca" 
+                                    Style="{StaticResource PrimaryButtonStyle}"
+                                    Padding="16,10"
+                                    Click="BtnSearchPokemon_Click" 
+                                    ToolTip="Cerca informazioni sul Pokémon su PokéAPI"/>
+                        </Grid>
+                        
+                        <!-- Immagine Pokémon (se disponibile) -->
+                        <Border x:Name="pokemonImageContainer" 
+                                Margin="0,8,0,0" 
+                                BorderBrush="{StaticResource BorderColor}" 
+                                BorderThickness="2" 
+                                CornerRadius="12"
+                                Visibility="Collapsed" 
+                                HorizontalAlignment="Center"
+                                Background="{StaticResource BackgroundColor}"
+                                Padding="15">
+                            <StackPanel>
+                                <Image x:Name="imgPokemon" Width="120" Height="120" 
+                                       Stretch="Uniform" Margin="0,0,0,10"/>
+                                <TextBlock x:Name="txtPokemonInfo" 
+                                           TextAlignment="Center" 
+                                           FontSize="11" 
+                                           Foreground="{StaticResource TextSecondaryColor}"
+                                           LineHeight="18"
+                                           TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Border>
 
-                <TextBlock Text="Set *" Margin="0,5,0,2"/>
-                <TextBox x:Name="txtSet" Margin="0,0,0,10"/>
+                <!-- Sezione Dettagli Carta -->
+                <Border Style="{StaticResource CardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="Dettagli Carta" 
+                                   FontSize="16" FontWeight="SemiBold" 
+                                   Foreground="{StaticResource TextPrimaryColor}"
+                                   Margin="0,0,0,15"/>
+                        
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="15"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
 
-                <TextBlock Text="Numero *" Margin="0,5,0,2"/>
-                <TextBox x:Name="txtNumber" Margin="0,0,0,10"/>
+                            <!-- Set -->
+                            <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3"
+                                       Text="Set *" 
+                                       FontSize="13" FontWeight="Medium"
+                                       Foreground="{StaticResource TextSecondaryColor}"
+                                       Margin="0,0,0,6"/>
+                            <ComboBox x:Name="cmbSet" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3"
+                                      Style="{StaticResource ComboBoxStyle}"
+                                      Margin="0,0,0,15"
+                                      IsEditable="True"
+                                      ToolTip="Seleziona o inserisci il set della carta"/>
 
-                <TextBlock Text="Rarità" Margin="0,5,0,2"/>
-                <ComboBox x:Name="cmbRarity" Margin="0,0,0,10">
-                    <ComboBoxItem Content="Common"/>
-                    <ComboBoxItem Content="Uncommon"/>
-                    <ComboBoxItem Content="Rare"/>
-                    <ComboBoxItem Content="Holo Rare"/>
-                    <ComboBoxItem Content="Ultra Rare"/>
-                    <ComboBoxItem Content="Secret Rare"/>
-                </ComboBox>
+                            <!-- Numero -->
+                            <TextBlock Grid.Row="2" Grid.Column="0"
+                                       Text="Numero *" 
+                                       FontSize="13" FontWeight="Medium"
+                                       Foreground="{StaticResource TextSecondaryColor}"
+                                       Margin="0,0,0,6"/>
+                            <TextBox x:Name="txtNumber" Grid.Row="3" Grid.Column="0"
+                                     Style="{StaticResource TextBoxStyle}"
+                                     Margin="0,0,0,15"/>
 
-                <TextBlock Text="Lingua" Margin="0,5,0,2"/>
-                <ComboBox x:Name="cmbLanguage" Margin="0,0,0,10">
-                    <ComboBoxItem Content="Italiano"/>
-                    <ComboBoxItem Content="Inglese"/>
-                    <ComboBoxItem Content="Giapponese"/>
-                    <ComboBoxItem Content="Francese"/>
-                    <ComboBoxItem Content="Tedesco"/>
-                    <ComboBoxItem Content="Spagnolo"/>
-                </ComboBox>
+                            <!-- Rarità -->
+                            <TextBlock Grid.Row="2" Grid.Column="2"
+                                       Text="Rarità" 
+                                       FontSize="13" FontWeight="Medium"
+                                       Foreground="{StaticResource TextSecondaryColor}"
+                                       Margin="0,0,0,6"/>
+                            <ComboBox x:Name="cmbRarity" Grid.Row="3" Grid.Column="2"
+                                      Style="{StaticResource ComboBoxStyle}"
+                                      Margin="0,0,0,15">
+                                <ComboBoxItem Content="Common"/>
+                                <ComboBoxItem Content="Uncommon"/>
+                                <ComboBoxItem Content="Rare"/>
+                                <ComboBoxItem Content="Holo Rare"/>
+                                <ComboBoxItem Content="Ultra Rare"/>
+                                <ComboBoxItem Content="Secret Rare"/>
+                            </ComboBox>
 
-                <TextBlock Text="Condizione" Margin="0,5,0,2"/>
-                <ComboBox x:Name="cmbCondition" Margin="0,0,0,10">
-                    <ComboBoxItem Content="Mint"/>
-                    <ComboBoxItem Content="Near Mint"/>
-                    <ComboBoxItem Content="Excellent"/>
-                    <ComboBoxItem Content="Good"/>
-                    <ComboBoxItem Content="Poor"/>
-                </ComboBox>
+                            <!-- Lingua -->
+                            <TextBlock Grid.Row="4" Grid.Column="0"
+                                       Text="Lingua" 
+                                       FontSize="13" FontWeight="Medium"
+                                       Foreground="{StaticResource TextSecondaryColor}"
+                                       Margin="0,0,0,6"/>
+                            <ComboBox x:Name="cmbLanguage" Grid.Row="5" Grid.Column="0"
+                                      Style="{StaticResource ComboBoxStyle}"
+                                      Margin="0,0,0,15">
+                                <ComboBoxItem Content="Italiano"/>
+                                <ComboBoxItem Content="Inglese"/>
+                                <ComboBoxItem Content="Giapponese"/>
+                                <ComboBoxItem Content="Francese"/>
+                                <ComboBoxItem Content="Tedesco"/>
+                                <ComboBoxItem Content="Spagnolo"/>
+                            </ComboBox>
 
-                <TextBlock Text="Prezzo d'Acquisto (€)" Margin="0,5,0,2"/>
-                <TextBox x:Name="txtPurchasePrice" Margin="0,0,0,10"/>
+                            <!-- Condizione -->
+                            <TextBlock Grid.Row="4" Grid.Column="2"
+                                       Text="Condizione" 
+                                       FontSize="13" FontWeight="Medium"
+                                       Foreground="{StaticResource TextSecondaryColor}"
+                                       Margin="0,0,0,6"/>
+                            <ComboBox x:Name="cmbCondition" Grid.Row="5" Grid.Column="2"
+                                      Style="{StaticResource ComboBoxStyle}"
+                                      Margin="0,0,0,15">
+                                <ComboBoxItem Content="Mint"/>
+                                <ComboBoxItem Content="Near Mint"/>
+                                <ComboBoxItem Content="Excellent"/>
+                                <ComboBoxItem Content="Good"/>
+                                <ComboBoxItem Content="Poor"/>
+                            </ComboBox>
+                        </Grid>
+                    </StackPanel>
+                </Border>
 
-                <TextBlock Text="Data Acquisto" Margin="0,5,0,2"/>
-                <DatePicker x:Name="dpPurchaseDate" Margin="0,0,0,10"/>
+                <!-- Sezione Finanziaria -->
+                <Border Style="{StaticResource CardStyle}" Margin="0,15,0,0">
+                    <StackPanel>
+                        <TextBlock Text="Informazioni Finanziarie" 
+                                   FontSize="16" FontWeight="SemiBold" 
+                                   Foreground="{StaticResource TextPrimaryColor}"
+                                   Margin="0,0,0,15"/>
+                        
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="15"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
 
-                <TextBlock Text="Fonte" Margin="0,5,0,2"/>
-                <TextBox x:Name="txtSource" Margin="0,0,0,10"/>
+                            <!-- Prezzo d'Acquisto -->
+                            <TextBlock Grid.Row="0" Grid.Column="0"
+                                       Text="Prezzo d'Acquisto (€)" 
+                                       FontSize="13" FontWeight="Medium"
+                                       Foreground="{StaticResource TextSecondaryColor}"
+                                       Margin="0,0,0,6"/>
+                            <TextBox x:Name="txtPurchasePrice" Grid.Row="1" Grid.Column="0"
+                                     Style="{StaticResource TextBoxStyle}"
+                                     Margin="0,0,0,15"/>
 
-                <TextBlock Text="Prezzo Attuale (€)" Margin="0,5,0,2"/>
-                <TextBox x:Name="txtCurrentPrice" Margin="0,0,0,10"/>
+                            <!-- Prezzo Attuale -->
+                            <TextBlock Grid.Row="0" Grid.Column="2"
+                                       Text="Prezzo Attuale (€)" 
+                                       FontSize="13" FontWeight="Medium"
+                                       Foreground="{StaticResource TextSecondaryColor}"
+                                       Margin="0,0,0,6"/>
+                            <TextBox x:Name="txtCurrentPrice" Grid.Row="1" Grid.Column="2"
+                                     Style="{StaticResource TextBoxStyle}"
+                                     Margin="0,0,0,15"/>
 
-                <TextBlock Text="Quantità" Margin="0,5,0,2"/>
-                <TextBox x:Name="txtQuantity" Text="1" Margin="0,0,0,10"/>
+                            <!-- Data Acquisto -->
+                            <TextBlock Grid.Row="2" Grid.Column="0"
+                                       Text="Data Acquisto" 
+                                       FontSize="13" FontWeight="Medium"
+                                       Foreground="{StaticResource TextSecondaryColor}"
+                                       Margin="0,0,0,6"/>
+                            <DatePicker x:Name="dpPurchaseDate" Grid.Row="3" Grid.Column="0"
+                                        Style="{StaticResource DatePickerStyle}"
+                                        Margin="0,0,0,15"/>
+
+                            <!-- Quantità -->
+                            <TextBlock Grid.Row="2" Grid.Column="2"
+                                       Text="Quantità" 
+                                       FontSize="13" FontWeight="Medium"
+                                       Foreground="{StaticResource TextSecondaryColor}"
+                                       Margin="0,0,0,6"/>
+                            <TextBox x:Name="txtQuantity" Grid.Row="3" Grid.Column="2"
+                                     Text="1"
+                                     Style="{StaticResource TextBoxStyle}"
+                                     Margin="0,0,0,15"/>
+                        </Grid>
+
+                        <!-- Fonte -->
+                        <TextBlock Text="Fonte" 
+                                   FontSize="13" FontWeight="Medium"
+                                   Foreground="{StaticResource TextSecondaryColor}"
+                                   Margin="0,0,0,6"/>
+                        <TextBox x:Name="txtSource" 
+                                 Style="{StaticResource TextBoxStyle}"
+                                 Margin="0,0,0,0"/>
+                    </StackPanel>
+                </Border>
             </StackPanel>
         </ScrollViewer>
 
         <!-- Pulsanti -->
-        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,15,0,0">
-            <Button Content="Annulla" Width="100" Margin="0,0,10,0" Click="BtnCancel_Click"/>
-            <Button Content="Salva" Width="100" Background="{StaticResource PrimaryColor}" Foreground="White" Click="BtnSave_Click"/>
+        <StackPanel Grid.Row="2" Orientation="Horizontal" 
+                    HorizontalAlignment="Right" Margin="0,20,0,0">
+            <Button Content="Annulla" Width="120" Height="40"
+                    Style="{StaticResource SecondaryButtonStyle}"
+                    Margin="0,0,12,0" 
+                    Click="BtnCancel_Click"/>
+            <Button Content="Salva" Width="120" Height="40"
+                    Style="{StaticResource PrimaryButtonStyle}"
+                    Click="BtnSave_Click"/>
         </StackPanel>
     </Grid>
 </Window>

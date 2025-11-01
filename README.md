@@ -472,6 +472,24 @@ Vedi il file [LICENSE](LICENSE) per i dettagli completi.
 
 ---
 
+## 💝 Supporta il Progetto
+
+<div align="center">
+
+### ☕ Se questo progetto ti è utile, considera di supportarlo con una donazione!
+
+</div>
+
+<div align="center">
+
+[![PayPal](https://img.shields.io/badge/PayPal-Donate-00457C?style=for-the-badge&logo=paypal&logoColor=white)](https://www.paypal.com/donate/?business=SH54EQG4R6X4N&no_recurring=0&item_name=Grazie+mille+%3A%29&currency_code=EUR)
+
+**[💖 Fai una donazione con PayPal](https://www.paypal.com/donate/?business=SH54EQG4R6X4N&no_recurring=0&item_name=Grazie+mille+%3A%29&currency_code=EUR)**
+
+</div>
+
+---
+
 ## 🙏 Ringraziamenti
 
 <div align="center">
@@ -483,12 +501,13 @@ Vedi il file [LICENSE](LICENSE) per i dettagli completi.
 - 📊 [LiveCharts](https://github.com/beto-rodriguez/LiveCharts2) - Librerie di grafici fantastiche
 - 🗄️ [Entity Framework Core](https://github.com/dotnet/efcore) - ORM potente e flessibile
 - 🌐 [.NET Community](https://dotnet.microsoft.com/) - Supporto continuo e risorse incredibili
+- 🔌 [PokéAPI](https://pokeapi.co/) - API gratuita per i dati dei Pokémon
 
 ---
 
 <div align="center">
 
-### ⭐ Se questo progetto ti è utile, considera di lasciare una stella!
+### ⭐ Se questo progetto ti è utile, considera di lasciare una stella o fare una donazione!
 
 [⬆ Torna all'inizio](#-pokémon-card-manager)
 

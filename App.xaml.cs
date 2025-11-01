@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Http;
 using PokemonCardManager.Data;
 using PokemonCardManager.Services;
 using System;
@@ -30,10 +31,14 @@ namespace PokemonCardManager
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlite($"Data Source={dbPath}"));
 
+            // Registrazione HttpClient per PokéAPI
+            services.AddHttpClient<IPokeApiService, PokeApiService>();
+
             // Registrazione dei servizi
             services.AddTransient<ICardService, CardService>();
             services.AddTransient<ISaleService, SaleService>();
             services.AddTransient<IDataExportService, DataExportService>();
+            services.AddSingleton<PokemonSetService>();
 
             // Registrazione delle viste e viewmodel
             services.AddSingleton<MainWindow>();
