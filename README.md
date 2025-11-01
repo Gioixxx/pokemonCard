@@ -13,6 +13,13 @@
 
 [🚀 Download](#-installazione) • [📖 Documentazione](#-utilizzo) • [🐛 Segnala Bug](../../issues) • [💡 Richiedi Feature](../../issues)
 
+<div align="center">
+
+[![PayPal](https://img.shields.io/badge/PayPal-Donate-00457C?style=for-the-badge&logo=paypal&logoColor=white)](https://www.paypal.com/donate/?business=SH54EQG4R6X4N&no_recurring=0&item_name=Grazie+mille+%3A%29&currency_code=EUR)
+
+**[💖 Fai una donazione con PayPal](https://www.paypal.com/donate/?business=SH54EQG4R6X4N&no_recurring=0&item_name=Grazie+mille+%3A%29&currency_code=EUR)**
+
+</div>
 ---
 
 </div>
@@ -466,7 +473,7 @@ Vedi il file [LICENSE](LICENSE) per i dettagli completi.
 
 **PokemonCardManager**
 
-[![GitHub](https://img.shields.io/badge/GitHub-@tuonome-181717?style=flat-square&logo=github)](https://github.com/tuonome)
+[![GitHub](https://img.shields.io/badge/GitHub-@tuonome-181717?style=flat-square&logo=github)](https://github.com/Gioixxx)
 
 </div>
 
@@ -477,14 +484,6 @@ Vedi il file [LICENSE](LICENSE) per i dettagli completi.
 <div align="center">
 
 ### ☕ Se questo progetto ti è utile, considera di supportarlo con una donazione!
-
-</div>
-
-<div align="center">
-
-[![PayPal](https://img.shields.io/badge/PayPal-Donate-00457C?style=for-the-badge&logo=paypal&logoColor=white)](https://www.paypal.com/donate/?business=SH54EQG4R6X4N&no_recurring=0&item_name=Grazie+mille+%3A%29&currency_code=EUR)
-
-**[💖 Fai una donazione con PayPal](https://www.paypal.com/donate/?business=SH54EQG4R6X4N&no_recurring=0&item_name=Grazie+mille+%3A%29&currency_code=EUR)**
 
 </div>
 
