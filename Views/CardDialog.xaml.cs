@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Media.Imaging;
 
 namespace PokemonCardManager.Views
@@ -31,6 +32,12 @@ namespace PokemonCardManager.Views
                 _pokeApiService = App.ServiceProvider.GetService(typeof(IPokeApiService)) as IPokeApiService;
                 _setService = App.ServiceProvider.GetService(typeof(PokemonSetService)) as PokemonSetService;
             }
+
+            // Imposta focus sul primo campo
+            Loaded += (s, e) => txtName.Focus();
+
+            // Supporto per shortcut da tastiera
+            KeyDown += CardDialog_KeyDown;
         }
 
         public CardDialog(Card card)
@@ -48,6 +55,29 @@ namespace PokemonCardManager.Views
             }
             
             LoadCardData();
+
+            // Imposta focus sul primo campo
+            Loaded += (s, e) => txtName.Focus();
+
+            // Supporto per shortcut da tastiera
+            KeyDown += CardDialog_KeyDown;
+        }
+
+        private void CardDialog_KeyDown(object sender, KeyEventArgs e)
+        {
+            // ESC per chiudere
+            if (e.Key == Key.Escape)
+            {
+                BtnCancel_Click(null, null);
+                e.Handled = true;
+            }
+            // Ctrl+Enter per salvare
+            else if (e.Key == Key.Enter && 
+                     (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
+            {
+                BtnSave_Click(null, null);
+                e.Handled = true;
+            }
         }
 
         private void LoadCardData()
@@ -85,10 +115,28 @@ namespace PokemonCardManager.Views
 
         private void BtnSave_Click(object sender, RoutedEventArgs e)
         {
+            // Reset evidenziazione errori
+            ResetValidationErrors();
+
             // Validazione campi obbligatori
-            if (string.IsNullOrWhiteSpace(txtName.Text) || 
-                string.IsNullOrWhiteSpace(cmbSet.Text) || 
-                string.IsNullOrWhiteSpace(txtNumber.Text))
+            bool hasErrors = false;
+            if (string.IsNullOrWhiteSpace(txtName.Text))
+            {
+                HighlightError(txtName);
+                hasErrors = true;
+            }
+            if (string.IsNullOrWhiteSpace(cmbSet.Text))
+            {
+                HighlightError(cmbSet);
+                hasErrors = true;
+            }
+            if (string.IsNullOrWhiteSpace(txtNumber.Text))
+            {
+                HighlightError(txtNumber);
+                hasErrors = true;
+            }
+
+            if (hasErrors)
             {
                 MessageBox.Show("I campi Nome, Set e Numero sono obbligatori.", "Errore", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
@@ -121,6 +169,36 @@ namespace PokemonCardManager.Views
 
             DialogResult = true;
             Close();
+        }
+
+        private void HighlightError(System.Windows.Controls.Control control)
+        {
+            // Evidenzia il controllo con bordo rosso
+            if (control is System.Windows.Controls.TextBox textBox)
+            {
+                textBox.BorderBrush = new System.Windows.Media.SolidColorBrush(
+                    (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#EF4444"));
+                textBox.BorderThickness = new Thickness(2);
+            }
+            else if (control is System.Windows.Controls.ComboBox comboBox)
+            {
+                comboBox.BorderBrush = new System.Windows.Media.SolidColorBrush(
+                    (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#EF4444"));
+                comboBox.BorderThickness = new Thickness(2);
+            }
+        }
+
+        private void ResetValidationErrors()
+        {
+            // Reset TextBox
+            txtName.BorderBrush = (System.Windows.Media.Brush)FindResource("BorderColor");
+            txtName.BorderThickness = new Thickness(1);
+            txtNumber.BorderBrush = (System.Windows.Media.Brush)FindResource("BorderColor");
+            txtNumber.BorderThickness = new Thickness(1);
+            
+            // Reset ComboBox
+            cmbSet.BorderBrush = (System.Windows.Media.Brush)FindResource("BorderColor");
+            cmbSet.BorderThickness = new Thickness(1);
         }
 
         private void BtnCancel_Click(object sender, RoutedEventArgs e)

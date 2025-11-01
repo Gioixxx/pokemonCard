@@ -58,25 +58,41 @@
                             Content="📦 Inventario" 
                             Style="{StaticResource MenuButtonStyle}" 
                             Foreground="White"
-                            Click="NavigateToInventory"/>
+                            Click="NavigateToInventory">
+                        <Button.ToolTip>
+                            <ToolTip Content="Visualizza e gestisci l'inventario delle carte (Ctrl+1)"/>
+                        </Button.ToolTip>
+                    </Button>
                     
                     <Button x:Name="btnSales" 
                             Content="💰 Vendite" 
                             Style="{StaticResource MenuButtonStyle}" 
                             Foreground="White"
-                            Click="NavigateToSales"/>
+                            Click="NavigateToSales">
+                        <Button.ToolTip>
+                            <ToolTip Content="Visualizza e gestisci le vendite (Ctrl+2)"/>
+                        </Button.ToolTip>
+                    </Button>
                     
                     <Button x:Name="btnDashboard" 
                             Content="📊 Dashboard" 
                             Style="{StaticResource MenuButtonStyle}" 
                             Foreground="White"
-                            Click="NavigateToDashboard"/>
+                            Click="NavigateToDashboard">
+                        <Button.ToolTip>
+                            <ToolTip Content="Visualizza statistiche e grafici (Ctrl+3)"/>
+                        </Button.ToolTip>
+                    </Button>
                     
                     <Button x:Name="btnSettings" 
                             Content="⚙️ Impostazioni" 
                             Style="{StaticResource MenuButtonStyle}" 
                             Foreground="White"
-                            Click="NavigateToSettings"/>
+                            Click="NavigateToSettings">
+                        <Button.ToolTip>
+                            <ToolTip Content="Impostazioni dell'applicazione (Ctrl+4)"/>
+                        </Button.ToolTip>
+                    </Button>
                 </StackPanel>
 
                 <!-- Footer -->

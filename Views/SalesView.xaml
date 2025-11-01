@@ -57,7 +57,11 @@
                 <Button Grid.Column="2" 
                         Content="➕ Registra Vendita" 
                         Style="{StaticResource PrimaryButtonStyle}"
-                        Click="BtnAddSale_Click"/>
+                        Click="BtnAddSale_Click">
+                    <Button.ToolTip>
+                        <ToolTip Content="Registra una nuova vendita nella collezione"/>
+                    </Button.ToolTip>
+                </Button>
             </Grid>
         </Border>
 

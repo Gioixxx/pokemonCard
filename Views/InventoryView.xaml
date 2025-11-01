@@ -58,7 +58,11 @@
                 <Button Grid.Column="2" 
                         Content="➕ Aggiungi Carta" 
                         Style="{StaticResource PrimaryButtonStyle}"
-                        Click="BtnAddCard_Click"/>
+                        Click="BtnAddCard_Click">
+                    <Button.ToolTip>
+                        <ToolTip Content="Aggiungi una nuova carta alla collezione (Ctrl+N)"/>
+                    </Button.ToolTip>
+                </Button>
             </Grid>
         </Border>
 

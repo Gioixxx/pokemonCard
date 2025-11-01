@@ -1,6 +1,7 @@
 using PokemonCardManager.Views;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 
 namespace PokemonCardManager
 {
@@ -12,6 +13,43 @@ namespace PokemonCardManager
             
             // Carica la vista inventario all'avvio
             NavigateToInventory(null, null);
+
+            // Supporto per shortcut da tastiera
+            KeyDown += MainWindow_KeyDown;
+        }
+
+        private void MainWindow_KeyDown(object sender, KeyEventArgs e)
+        {
+            // Ignora se siamo in un controllo che gestisce testo (TextBox, ComboBox, etc.)
+            if (e.OriginalSource is System.Windows.Controls.TextBox || 
+                e.OriginalSource is System.Windows.Controls.ComboBox ||
+                e.OriginalSource is System.Windows.Controls.DatePicker)
+                return;
+
+            // Ctrl+1 - Inventario
+            if (e.Key == Key.D1 && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
+            {
+                NavigateToInventory(null, null);
+                e.Handled = true;
+            }
+            // Ctrl+2 - Vendite
+            else if (e.Key == Key.D2 && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
+            {
+                NavigateToSales(null, null);
+                e.Handled = true;
+            }
+            // Ctrl+3 - Dashboard
+            else if (e.Key == Key.D3 && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
+            {
+                NavigateToDashboard(null, null);
+                e.Handled = true;
+            }
+            // Ctrl+4 - Impostazioni
+            else if (e.Key == Key.D4 && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
+            {
+                NavigateToSettings(null, null);
+                e.Handled = true;
+            }
         }
 
         private void NavigateToInventory(object sender, RoutedEventArgs e)
