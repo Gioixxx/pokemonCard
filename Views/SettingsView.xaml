@@ -1,0 +1,155 @@
+<Page x:Class="PokemonCardManager.Views.SettingsView"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:PokemonCardManager.Views"
+      mc:Ignorable="d" 
+      d:DesignHeight="600" d:DesignWidth="800"
+      Title="Impostazioni"
+      Background="{StaticResource BackgroundColor}">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0">
+        <Grid Margin="30">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" 
+                       Text="⚙️ Impostazioni" 
+                       Style="{StaticResource TitleTextStyle}"/>
+
+            <!-- Esportazione Dati -->
+            <Border Grid.Row="1" 
+                    Style="{StaticResource CardStyle}" 
+                    Margin="0,0,0,20">
+                <StackPanel>
+                    <TextBlock Text="💾 Esportazione Dati" 
+                               Style="{StaticResource SubtitleTextStyle}"
+                               Margin="0,0,0,15"/>
+                    <TextBlock Text="Esporta i tuoi dati in formato CSV o crea un backup del database SQLite per preservare tutte le informazioni della tua collezione." 
+                               TextWrapping="Wrap" 
+                               Foreground="{StaticResource TextSecondaryColor}"
+                               Margin="0,0,0,20"
+                               FontSize="14"
+                               LineHeight="22"/>
+                    
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        
+                        <StackPanel Grid.Row="0" Grid.Column="0" VerticalAlignment="Center">
+                            <TextBlock Text="Esporta Inventario" 
+                                       FontWeight="SemiBold" 
+                                       FontSize="14"
+                                       Foreground="{StaticResource TextPrimaryColor}"/>
+                            <TextBlock Text="Esporta tutte le carte in formato CSV" 
+                                       FontSize="12"
+                                       Foreground="{StaticResource TextSecondaryColor}"
+                                       Margin="0,3,0,0"/>
+                        </StackPanel>
+                        <Button Grid.Row="0" 
+                                Grid.Column="1" 
+                                Content="📥 Esporta" 
+                                Style="{StaticResource PrimaryButtonStyle}"
+                                Padding="25,12"
+                                Click="ExportCardsButton_Click"/>
+                        
+                        <StackPanel Grid.Row="1" 
+                                    Grid.Column="0" 
+                                    VerticalAlignment="Center"
+                                    Margin="0,20,0,0">
+                            <TextBlock Text="Esporta Vendite" 
+                                       FontWeight="SemiBold" 
+                                       FontSize="14"
+                                       Foreground="{StaticResource TextPrimaryColor}"/>
+                            <TextBlock Text="Esporta il registro vendite in formato CSV" 
+                                       FontSize="12"
+                                       Foreground="{StaticResource TextSecondaryColor}"
+                                       Margin="0,3,0,0"/>
+                        </StackPanel>
+                        <Button Grid.Row="1" 
+                                Grid.Column="1" 
+                                Content="📥 Esporta" 
+                                Style="{StaticResource PrimaryButtonStyle}"
+                                Padding="25,12"
+                                Margin="0,20,0,0"
+                                Click="ExportSalesButton_Click"/>
+                        
+                        <StackPanel Grid.Row="2" 
+                                    Grid.Column="0" 
+                                    VerticalAlignment="Center"
+                                    Margin="0,20,0,0">
+                            <TextBlock Text="Backup Database" 
+                                       FontWeight="SemiBold" 
+                                       FontSize="14"
+                                       Foreground="{StaticResource TextPrimaryColor}"/>
+                            <TextBlock Text="Crea un backup completo del database SQLite" 
+                                       FontSize="12"
+                                       Foreground="{StaticResource TextSecondaryColor}"
+                                       Margin="0,3,0,0"/>
+                        </StackPanel>
+                        <Button Grid.Row="2" 
+                                Grid.Column="1" 
+                                Content="💾 Backup" 
+                                Style="{StaticResource PrimaryButtonStyle}"
+                                Padding="25,12"
+                                Margin="0,20,0,0"
+                                Click="BackupDatabaseButton_Click"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Informazioni Applicazione -->
+            <Border Grid.Row="2" 
+                    Style="{StaticResource CardStyle}" 
+                    Margin="0,0,0,20">
+                <StackPanel>
+                    <TextBlock Text="ℹ️ Informazioni Applicazione" 
+                               Style="{StaticResource SubtitleTextStyle}"
+                               Margin="0,0,0,15"/>
+                    <StackPanel>
+                        <TextBlock Text="Pokémon Card Manager" 
+                                   FontWeight="Bold" 
+                                   FontSize="18"
+                                   Foreground="{StaticResource TextPrimaryColor}"
+                                   Margin="0,0,0,8"/>
+                        <TextBlock Text="Versione 1.0.0" 
+                                   FontSize="14"
+                                   Foreground="{StaticResource TextSecondaryColor}"
+                                   Margin="0,0,0,12"/>
+                        <TextBlock Text="© 2024 - Applicazione desktop per la gestione professionale della collezione di carte Pokémon, il monitoraggio delle vendite e l'analisi dei profitti." 
+                                   TextWrapping="Wrap" 
+                                   FontSize="13"
+                                   Foreground="{StaticResource TextSecondaryColor}"
+                                   LineHeight="20"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+            
+            <!-- Descrizione -->
+            <Border Grid.Row="3" 
+                    Style="{StaticResource CardStyle}"
+                    Background="#F8FAFC">
+                <TextBlock TextWrapping="Wrap" 
+                           FontSize="14"
+                           Foreground="{StaticResource TextSecondaryColor}"
+                           LineHeight="24"
+                           Padding="20">
+                    <Run Text="Questa applicazione è stata creata per aiutarti a gestire la tua collezione di carte Pokémon in modo professionale. " FontWeight="Normal"/>
+                    <Run Text="Traccia ogni carta, monitora le vendite e analizza i profitti con grafici interattivi e statistiche dettagliate." FontWeight="Normal"/>
+                </TextBlock>
+            </Border>
+        </Grid>
+    </ScrollViewer>
+</Page>

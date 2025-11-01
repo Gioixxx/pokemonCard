@@ -1,0 +1,155 @@
+<Page x:Class="PokemonCardManager.Views.DashboardView"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:PokemonCardManager.Views"
+      xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
+      mc:Ignorable="d" 
+      d:DesignHeight="650" d:DesignWidth="1060"
+      Title="Dashboard"
+      Background="{StaticResource BackgroundColor}">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0">
+        <Grid Margin="30">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Intestazione -->
+            <TextBlock Grid.Row="0" 
+                       Text="📊 Dashboard" 
+                       Style="{StaticResource TitleTextStyle}"/>
+
+            <!-- Statistiche principali -->
+            <Grid Grid.Row="1" Margin="0,0,0,25">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Valore Collezione -->
+                <Border Grid.Column="0" 
+                        Style="{StaticResource StatCardStyle}"
+                        Background="{StaticResource PrimaryGradient}">
+                    <StackPanel>
+                        <TextBlock Text="💎 Valore Collezione" 
+                                   Foreground="White" 
+                                   FontSize="13" 
+                                   FontWeight="Medium" 
+                                   Opacity="0.95"/>
+                        <TextBlock x:Name="txtCollectionValue" 
+                                   Text="€ 0,00" 
+                                   Foreground="White" 
+                                   FontSize="32" 
+                                   FontWeight="Bold" 
+                                   Margin="0,8,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Totale Speso -->
+                <Border Grid.Column="1" 
+                        Style="{StaticResource StatCardStyle}"
+                        Background="{StaticResource SecondaryColor}">
+                    <StackPanel>
+                        <TextBlock Text="💸 Totale Speso" 
+                                   Foreground="White" 
+                                   FontSize="13" 
+                                   FontWeight="Medium" 
+                                   Opacity="0.95"/>
+                        <TextBlock x:Name="txtTotalSpent" 
+                                   Text="€ 0,00" 
+                                   Foreground="White" 
+                                   FontSize="32" 
+                                   FontWeight="Bold" 
+                                   Margin="0,8,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Totale Incassato -->
+                <Border Grid.Column="2" 
+                        Style="{StaticResource StatCardStyle}"
+                        Background="{StaticResource SuccessColor}">
+                    <StackPanel>
+                        <TextBlock Text="💰 Totale Incassato" 
+                                   Foreground="White" 
+                                   FontSize="13" 
+                                   FontWeight="Medium" 
+                                   Opacity="0.95"/>
+                        <TextBlock x:Name="txtTotalEarned" 
+                                   Text="€ 0,00" 
+                                   Foreground="White" 
+                                   FontSize="32" 
+                                   FontWeight="Bold" 
+                                   Margin="0,8,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- ROI Medio -->
+                <Border Grid.Column="3" 
+                        Style="{StaticResource StatCardStyle}"
+                        Background="{StaticResource InfoColor}">
+                    <StackPanel>
+                        <TextBlock Text="📈 ROI Medio" 
+                                   Foreground="White" 
+                                   FontSize="13" 
+                                   FontWeight="Medium" 
+                                   Opacity="0.95"/>
+                        <TextBlock x:Name="txtAverageROI" 
+                                   Text="0%" 
+                                   Foreground="White" 
+                                   FontSize="32" 
+                                   FontWeight="Bold" 
+                                   Margin="0,8,0,0"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!-- Grafico a torta dei set più redditizi -->
+            <Border Grid.Row="2" 
+                    Style="{StaticResource CardStyle}" 
+                    Margin="0,0,0,20">
+                <Grid Margin="20">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" 
+                               Text="🎯 Set Più Redditizi" 
+                               Style="{StaticResource SubtitleTextStyle}"/>
+                    <lvc:PieChart Grid.Row="1" 
+                                  x:Name="pieChartSets" 
+                                  Series="{Binding PieSeries}"
+                                  Height="350"/>
+                </Grid>
+            </Border>
+
+            <!-- Grafico a barre dell'andamento vendite -->
+            <Border Grid.Row="3" 
+                    Style="{StaticResource CardStyle}">
+                <Grid Margin="20">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" 
+                               Text="📊 Andamento Vendite" 
+                               Style="{StaticResource SubtitleTextStyle}"/>
+                    <lvc:CartesianChart Grid.Row="1" 
+                                        x:Name="barChartSales" 
+                                        Series="{Binding BarSeries}" 
+                                        XAxes="{Binding XAxes}" 
+                                        YAxes="{Binding YAxes}"
+                                        Height="350"/>
+                </Grid>
+            </Border>
+        </Grid>
+    </ScrollViewer>
+</Page>

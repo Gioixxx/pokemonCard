@@ -1,0 +1,170 @@
+<Page x:Class="PokemonCardManager.Views.InventoryView"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:PokemonCardManager.Views"
+      mc:Ignorable="d" 
+      d:DesignHeight="650" d:DesignWidth="1060"
+      Title="Inventario"
+      Background="{StaticResource BackgroundColor}">
+
+    <Grid Margin="30">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Intestazione -->
+        <TextBlock Grid.Row="0" 
+                   Text="📦 Inventario Carte" 
+                   Style="{StaticResource TitleTextStyle}"/>
+
+        <!-- Barra di ricerca e filtri -->
+        <Border Grid.Row="1" 
+                Style="{StaticResource CardStyle}" 
+                Margin="0,0,0,20">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBox Grid.Column="0" 
+                         x:Name="txtSearch" 
+                         Margin="0,0,15,0" 
+                         Style="{StaticResource TextBoxStyle}"
+                         TextChanged="TxtSearch_TextChanged">
+                    <TextBox.ToolTip>
+                        <ToolTip Content="Cerca per nome, set o numero..."/>
+                    </TextBox.ToolTip>
+                </TextBox>
+                
+                <ComboBox Grid.Column="1" 
+                          x:Name="cmbFilter" 
+                          Width="180" 
+                          Margin="0,0,15,0" 
+                          Style="{StaticResource ComboBoxStyle}"
+                          SelectionChanged="CmbFilter_SelectionChanged">
+                    <ComboBoxItem Content="Tutti i set" IsSelected="True"/>
+                    <ComboBoxItem Content="Per rarità"/>
+                    <ComboBoxItem Content="Per lingua"/>
+                    <ComboBoxItem Content="Per condizione"/>
+                </ComboBox>
+                
+                <Button Grid.Column="2" 
+                        Content="➕ Aggiungi Carta" 
+                        Style="{StaticResource PrimaryButtonStyle}"
+                        Click="BtnAddCard_Click"/>
+            </Grid>
+        </Border>
+
+        <!-- Tabella carte -->
+        <Border Grid.Row="2" 
+                Style="{StaticResource CardStyle}" 
+                Margin="0,0,0,20"
+                Padding="0">
+            <DataGrid x:Name="dgCards" 
+                     Style="{StaticResource DataGridStyle}" 
+                     ItemsSource="{Binding Cards}" 
+                     SelectionChanged="DgCards_SelectionChanged"
+                     ColumnHeaderStyle="{StaticResource DataGridColumnHeaderStyle}">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Nome" Binding="{Binding Name}" Width="*"/>
+                    <DataGridTextColumn Header="Set" Binding="{Binding Set}" Width="120"/>
+                    <DataGridTextColumn Header="Numero" Binding="{Binding Number}" Width="80"/>
+                    <DataGridTextColumn Header="Rarità" Binding="{Binding Rarity}" Width="100"/>
+                    <DataGridTextColumn Header="Lingua" Binding="{Binding Language}" Width="80"/>
+                    <DataGridTextColumn Header="Condizione" Binding="{Binding Condition}" Width="100"/>
+                    <DataGridTextColumn Header="Prezzo Acquisto" Binding="{Binding PurchasePrice, StringFormat=€ {0:N2}}" Width="130"/>
+                    <DataGridTextColumn Header="Prezzo Attuale" Binding="{Binding CurrentPrice, StringFormat=€ {0:N2}}" Width="130"/>
+                    <DataGridTextColumn Header="Quantità" Binding="{Binding Quantity}" Width="90"/>
+                    <DataGridTextColumn Header="Valore Totale" Binding="{Binding TotalValue, StringFormat=€ {0:N2}}" Width="130"/>
+                    <DataGridTextColumn Header="Profitto Stimato" Binding="{Binding EstimatedProfit, StringFormat=€ {0:N2}}" Width="140"/>
+                    <DataGridTemplateColumn Width="120" Header="Azioni">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                    <Button Content="✏️" 
+                                            Style="{StaticResource IconButtonStyle}"
+                                            ToolTip="Modifica carta"
+                                            Click="BtnEditCard_Click"/>
+                                    <Button Content="🗑️" 
+                                            Style="{StaticResource IconButtonStyle}"
+                                            ToolTip="Elimina carta"
+                                            Click="BtnDeleteCard_Click"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+
+        <!-- Riepilogo Statistiche -->
+        <Grid Grid.Row="3">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            
+            <Border Grid.Column="0" 
+                    Style="{StaticResource StatCardStyle}"
+                    Background="{StaticResource InfoColor}">
+                <StackPanel>
+                    <TextBlock Text="Totale Carte" 
+                               Foreground="White" 
+                               FontSize="13" 
+                               FontWeight="Medium" 
+                               Opacity="0.9"/>
+                    <TextBlock x:Name="txtTotalCards" 
+                               Text="0" 
+                               Foreground="White" 
+                               FontSize="28" 
+                               FontWeight="Bold" 
+                               Margin="0,5,0,0"/>
+                </StackPanel>
+            </Border>
+            
+            <Border Grid.Column="1" 
+                    Style="{StaticResource StatCardStyle}"
+                    Background="{StaticResource SuccessColor}">
+                <StackPanel>
+                    <TextBlock Text="Valore Totale" 
+                               Foreground="White" 
+                               FontSize="13" 
+                               FontWeight="Medium" 
+                               Opacity="0.9"/>
+                    <TextBlock x:Name="txtTotalValue" 
+                               Text="€ 0,00" 
+                               Foreground="White" 
+                               FontSize="28" 
+                               FontWeight="Bold" 
+                               Margin="0,5,0,0"/>
+                </StackPanel>
+            </Border>
+            
+            <Border Grid.Column="2" 
+                    Style="{StaticResource StatCardStyle}"
+                    Background="{StaticResource AccentColor}">
+                <StackPanel>
+                    <TextBlock Text="Profitto Stimato" 
+                               Foreground="White" 
+                               FontSize="13" 
+                               FontWeight="Medium" 
+                               Opacity="0.9"/>
+                    <TextBlock x:Name="txtTotalProfit" 
+                               Text="€ 0,00" 
+                               Foreground="White" 
+                               FontSize="28" 
+                               FontWeight="Bold" 
+                               Margin="0,5,0,0"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</Page>
