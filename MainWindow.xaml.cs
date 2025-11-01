@@ -1,4 +1,5 @@
 using PokemonCardManager.Views;
+using PokemonCardManager.Services;
 using System;
 using System.Windows;
 using System.Windows.Controls;
@@ -55,6 +56,47 @@ namespace PokemonCardManager
             {
                 NavigateToSettings(null, null);
                 e.Handled = true;
+            }
+            // Ctrl+Z - Undo
+            else if (e.Key == Key.Z && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control && !e.KeyboardDevice.IsKeyDown(Key.LeftShift) && !e.KeyboardDevice.IsKeyDown(Key.RightShift))
+            {
+                var undoRedoService = _serviceProvider.GetRequiredService<IUndoRedoService>();
+                if (undoRedoService.CanUndo)
+                {
+                    undoRedoService.Undo();
+                    e.Handled = true;
+                    
+                    // Refresh current view
+                    if (MainFrame.Content is InventoryView inventoryView)
+                    {
+                        // Trigger refresh
+                    }
+                    else if (MainFrame.Content is SalesView salesView)
+                    {
+                        // Trigger refresh
+                    }
+                }
+            }
+            // Ctrl+Y o Ctrl+Shift+Z - Redo
+            else if ((e.Key == Key.Y && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control) ||
+                     (e.Key == Key.Z && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control && (e.KeyboardDevice.IsKeyDown(Key.LeftShift) || e.KeyboardDevice.IsKeyDown(Key.RightShift))))
+            {
+                var undoRedoService = _serviceProvider.GetRequiredService<IUndoRedoService>();
+                if (undoRedoService.CanRedo)
+                {
+                    undoRedoService.Redo();
+                    e.Handled = true;
+                    
+                    // Refresh current view
+                    if (MainFrame.Content is InventoryView inventoryView)
+                    {
+                        // Trigger refresh
+                    }
+                    else if (MainFrame.Content is SalesView salesView)
+                    {
+                        // Trigger refresh
+                    }
+                }
             }
         }
 

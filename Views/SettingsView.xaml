@@ -22,8 +22,63 @@
                        Text="⚙️ Impostazioni" 
                        Style="{StaticResource TitleTextStyle}"/>
 
-            <!-- Esportazione Dati -->
+            <!-- Impostazioni Apparenza -->
             <Border Grid.Row="1" 
+                    Style="{StaticResource CardStyle}" 
+                    Margin="0,0,0,20">
+                <StackPanel>
+                    <TextBlock Text="🎨 Aspetto" 
+                               Style="{StaticResource SubtitleTextStyle}"
+                               Margin="0,0,0,15"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <TextBlock Text="Tema Scuro" 
+                                       FontWeight="SemiBold" 
+                                       FontSize="14"
+                                       Foreground="{StaticResource TextPrimaryColor}"/>
+                            <TextBlock Text="Attiva il tema scuro per ridurre l'affaticamento degli occhi" 
+                                       FontSize="12"
+                                       Foreground="{StaticResource TextSecondaryColor}"
+                                       Margin="0,3,0,0"/>
+                        </StackPanel>
+                        <ToggleButton x:Name="toggleDarkMode" 
+                                     Grid.Column="1"
+                                     Width="50"
+                                     Height="30"
+                                     Checked="ToggleDarkMode_Checked"
+                                     Unchecked="ToggleDarkMode_Unchecked"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Importazione Massiva -->
+            <Border Grid.Row="2" 
+                    Style="{StaticResource CardStyle}" 
+                    Margin="0,0,0,20">
+                <StackPanel>
+                    <TextBlock Text="📥 Importazione Massiva" 
+                               Style="{StaticResource SubtitleTextStyle}"
+                               Margin="0,0,0,15"/>
+                    <TextBlock Text="Importa più carte contemporaneamente da un file CSV. Il formato deve corrispondere a quello di esportazione." 
+                               TextWrapping="Wrap" 
+                               Foreground="{StaticResource TextSecondaryColor}"
+                               Margin="0,0,0,20"
+                               FontSize="14"
+                               LineHeight="22"/>
+                    <Button Content="📥 Importa da CSV" 
+                            Style="{StaticResource PrimaryButtonStyle}"
+                            Padding="25,12"
+                            HorizontalAlignment="Left"
+                            Click="ImportCardsButton_Click"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Esportazione Dati -->
+            <Border Grid.Row="3" 
                     Style="{StaticResource CardStyle}" 
                     Margin="0,0,0,20">
                 <StackPanel>
@@ -111,7 +166,7 @@
             </Border>
 
             <!-- Informazioni Applicazione -->
-            <Border Grid.Row="2" 
+            <Border Grid.Row="4" 
                     Style="{StaticResource CardStyle}" 
                     Margin="0,0,0,20">
                 <StackPanel>
@@ -138,7 +193,7 @@
             </Border>
             
             <!-- Descrizione -->
-            <Border Grid.Row="3" 
+            <Border Grid.Row="5" 
                     Style="{StaticResource CardStyle}"
                     Background="#F8FAFC">
                 <TextBlock TextWrapping="Wrap" 

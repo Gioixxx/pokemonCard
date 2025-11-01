@@ -34,6 +34,19 @@ namespace PokemonCardManager
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlite($"Data Source={dbPath}"));
 
+            // Registrazione Cache e Rate Limiter
+            services.AddSingleton<ICacheService, CacheService>();
+            services.AddSingleton<IRateLimiter>(sp => new RateLimiter(maxConcurrentRequests: 5, timeWindow: TimeSpan.FromSeconds(1), logger: sp.GetRequiredService<ILogger>()));
+
+            // Registrazione Theme Service
+            services.AddSingleton<IThemeService, ThemeService>();
+
+            // Registrazione Undo/Redo Service (usa factory per ottenere IServiceProvider)
+            services.AddSingleton<IUndoRedoService>(sp => new UndoRedoService(sp.GetRequiredService<ILogger>(), sp));
+
+            // Registrazione Bulk Import Service
+            services.AddTransient<IBulkImportService, BulkImportService>();
+
             // Registrazione HttpClient per PokéAPI
             services.AddHttpClient<IPokeApiService, PokeApiService>();
 
@@ -66,6 +79,10 @@ namespace PokemonCardManager
                     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
                     dbContext.Database.Migrate();
                 }
+
+                // Load theme
+                var themeService = ServiceProvider.GetRequiredService<IThemeService>();
+                themeService.LoadTheme();
 
                 var mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
                 mainWindow.Show();

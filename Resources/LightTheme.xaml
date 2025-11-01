@@ -1,0 +1,12 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <!-- Light Theme Colors -->
+    <SolidColorBrush x:Key="BackgroundColor" Color="#F8FAFC"/>
+    <SolidColorBrush x:Key="SurfaceColor" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="BorderColor" Color="#E2E8F0"/>
+    <SolidColorBrush x:Key="TextPrimaryColor" Color="#1E293B"/>
+    <SolidColorBrush x:Key="TextSecondaryColor" Color="#64748B"/>
+    
+</ResourceDictionary>
+

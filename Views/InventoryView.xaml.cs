@@ -12,11 +12,11 @@ namespace PokemonCardManager.Views
     {
         private readonly InventoryViewModel _viewModel;
 
-        public InventoryView(ICardService cardService, ILogger logger)
+        public InventoryView(ICardService cardService, ILogger logger, IUndoRedoService undoRedoService)
         {
             InitializeComponent();
 
-            _viewModel = new InventoryViewModel(cardService, logger);
+            _viewModel = new InventoryViewModel(cardService, logger, undoRedoService);
             DataContext = _viewModel;
 
             // Subscribe to events

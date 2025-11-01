@@ -15,6 +15,7 @@ namespace PokemonCardManager.ViewModels
     {
         private readonly ISaleService _saleService;
         private readonly ILogger _logger;
+        private readonly IUndoRedoService _undoRedoService;
         private readonly Dispatcher _dispatcher;
 
         private ObservableCollection<Sale> _sales;
@@ -31,10 +32,11 @@ namespace PokemonCardManager.ViewModels
         private decimal _totalRevenue;
         private decimal _totalProfit;
 
-        public SalesViewModel(ISaleService saleService, ILogger logger)
+        public SalesViewModel(ISaleService saleService, ILogger logger, IUndoRedoService undoRedoService)
         {
             _saleService = saleService ?? throw new ArgumentNullException(nameof(saleService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _undoRedoService = undoRedoService ?? throw new ArgumentNullException(nameof(undoRedoService));
             _dispatcher = Dispatcher.CurrentDispatcher;
 
             _sales = new ObservableCollection<Sale>();
@@ -310,7 +312,22 @@ namespace PokemonCardManager.ViewModels
                 IsLoading = true;
                 StatusMessage = "Aggiunta vendita...";
 
+                // Create a copy for undo
+                var saleCopy = new Sale
+                {
+                    CardId = sale.CardId,
+                    SaleDate = sale.SaleDate,
+                    SalePrice = sale.SalePrice,
+                    Fee = sale.Fee,
+                    ShippingCost = sale.ShippingCost,
+                    Quantity = sale.Quantity
+                };
+
                 await _saleService.AddSaleAsync(sale);
+                
+                // Record operation for undo
+                _undoRedoService.RecordOperation(OperationType.AddSale, saleCopy);
+                
                 await LoadSalesAsync(); // Reload to get updated data
                 StatusMessage = "Vendita aggiunta con successo";
                 OnSaleAdded?.Invoke(sale);
@@ -343,7 +360,24 @@ namespace PokemonCardManager.ViewModels
                 IsLoading = true;
                 StatusMessage = "Eliminazione in corso...";
 
+                // Create a copy for undo
+                var saleCopy = new Sale
+                {
+                    Id = sale.Id,
+                    CardId = sale.CardId,
+                    SaleDate = sale.SaleDate,
+                    SalePrice = sale.SalePrice,
+                    Fee = sale.Fee,
+                    ShippingCost = sale.ShippingCost,
+                    Quantity = sale.Quantity,
+                    RowVersion = sale.RowVersion
+                };
+
                 await _saleService.DeleteSaleAsync(sale.Id);
+                
+                // Record operation for undo
+                _undoRedoService.RecordOperation(OperationType.DeleteSale, saleCopy);
+                
                 await LoadSalesAsync(); // Reload to get updated data
                 StatusMessage = "Vendita eliminata con successo";
                 OnSaleDeleted?.Invoke(sale);

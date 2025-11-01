@@ -16,6 +16,7 @@ namespace PokemonCardManager.ViewModels
     {
         private readonly ICardService _cardService;
         private readonly ILogger _logger;
+        private readonly IUndoRedoService _undoRedoService;
         private readonly Dispatcher _dispatcher;
 
         private ObservableCollection<Card> _cards;
@@ -29,10 +30,11 @@ namespace PokemonCardManager.ViewModels
         private int _totalPages;
 
 
-        public InventoryViewModel(ICardService cardService, ILogger logger)
+        public InventoryViewModel(ICardService cardService, ILogger logger, IUndoRedoService undoRedoService)
         {
             _cardService = cardService ?? throw new ArgumentNullException(nameof(cardService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _undoRedoService = undoRedoService ?? throw new ArgumentNullException(nameof(undoRedoService));
             _dispatcher = Dispatcher.CurrentDispatcher;
 
             _cards = new ObservableCollection<Card>();
@@ -48,6 +50,8 @@ namespace PokemonCardManager.ViewModels
             PreviousPageCommand = new RelayCommandAsync(async () => await GoToPageAsync(CurrentPage - 1), () => CurrentPage > 1 && !IsLoading);
             NextPageCommand = new RelayCommandAsync(async () => await GoToPageAsync(CurrentPage + 1), () => CurrentPage < TotalPages && !IsLoading);
             LastPageCommand = new RelayCommandAsync(async () => await GoToPageAsync(TotalPages), () => CurrentPage < TotalPages && !IsLoading);
+            UndoCommand = new RelayCommand(() => _undoRedoService.Undo(), () => _undoRedoService.CanUndo);
+            RedoCommand = new RelayCommand(() => _undoRedoService.Redo(), () => _undoRedoService.CanRedo);
 
             // Load initial data
             _ = LoadCardsAsync();
@@ -176,6 +180,8 @@ namespace PokemonCardManager.ViewModels
         public ICommand PreviousPageCommand { get; }
         public ICommand NextPageCommand { get; }
         public ICommand LastPageCommand { get; }
+        public ICommand UndoCommand { get; }
+        public ICommand RedoCommand { get; }
 
         // Events
         public event Action OnAddCardRequested;
@@ -256,7 +262,29 @@ namespace PokemonCardManager.ViewModels
                 IsLoading = true;
                 StatusMessage = "Eliminazione in corso...";
 
+                // Create a copy for undo
+                var cardCopy = new Card
+                {
+                    Id = card.Id,
+                    Name = card.Name,
+                    Set = card.Set,
+                    Number = card.Number,
+                    Rarity = card.Rarity,
+                    Language = card.Language,
+                    Condition = card.Condition,
+                    PurchasePrice = card.PurchasePrice,
+                    PurchaseDate = card.PurchaseDate,
+                    Source = card.Source,
+                    CurrentPrice = card.CurrentPrice,
+                    Quantity = card.Quantity,
+                    RowVersion = card.RowVersion
+                };
+
                 await _cardService.DeleteCardAsync(card.Id);
+                
+                // Record operation for undo
+                _undoRedoService.RecordOperation(OperationType.DeleteCard, cardCopy);
+                
                 Cards.Remove(card);
                 TotalItems--;
                 UpdateSummary();
@@ -306,7 +334,27 @@ namespace PokemonCardManager.ViewModels
                 IsLoading = true;
                 StatusMessage = "Aggiunta carta...";
 
+                // Create a copy for undo
+                var cardCopy = new Card
+                {
+                    Name = card.Name,
+                    Set = card.Set,
+                    Number = card.Number,
+                    Rarity = card.Rarity,
+                    Language = card.Language,
+                    Condition = card.Condition,
+                    PurchasePrice = card.PurchasePrice,
+                    PurchaseDate = card.PurchaseDate,
+                    Source = card.Source,
+                    CurrentPrice = card.CurrentPrice,
+                    Quantity = card.Quantity
+                };
+
                 await _cardService.AddCardAsync(card);
+                
+                // Record operation for undo
+                _undoRedoService.RecordOperation(OperationType.AddCard, cardCopy);
+                
                 await LoadCardsAsync(); // Reload to get updated data
                 StatusMessage = "Carta aggiunta con successo";
                 _logger.LogInformation($"Card added: {card.Name}");
@@ -332,7 +380,37 @@ namespace PokemonCardManager.ViewModels
                 IsLoading = true;
                 StatusMessage = "Aggiornamento carta...";
 
+                // Get previous state for undo
+                var previousCard = await _cardService.GetCardByIdAsync(card.Id);
+                if (previousCard == null)
+                {
+                    StatusMessage = "Carta non trovata";
+                    return;
+                }
+
+                // Create a copy of previous state
+                var previousState = new Card
+                {
+                    Id = previousCard.Id,
+                    Name = previousCard.Name,
+                    Set = previousCard.Set,
+                    Number = previousCard.Number,
+                    Rarity = previousCard.Rarity,
+                    Language = previousCard.Language,
+                    Condition = previousCard.Condition,
+                    PurchasePrice = previousCard.PurchasePrice,
+                    PurchaseDate = previousCard.PurchaseDate,
+                    Source = previousCard.Source,
+                    CurrentPrice = previousCard.CurrentPrice,
+                    Quantity = previousCard.Quantity,
+                    RowVersion = previousCard.RowVersion
+                };
+
                 await _cardService.UpdateCardAsync(card);
+                
+                // Record operation for undo
+                _undoRedoService.RecordOperation(OperationType.UpdateCard, card, previousState);
+                
                 await RefreshCardAsync(card);
                 UpdateSummary();
                 StatusMessage = "Carta aggiornata con successo";

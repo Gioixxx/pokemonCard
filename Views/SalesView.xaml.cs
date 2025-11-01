@@ -11,11 +11,11 @@ namespace PokemonCardManager.Views
     {
         private readonly SalesViewModel _viewModel;
 
-        public SalesView(ISaleService saleService, ILogger logger)
+        public SalesView(ISaleService saleService, ILogger logger, IUndoRedoService undoRedoService)
         {
             InitializeComponent();
 
-            _viewModel = new SalesViewModel(saleService, logger);
+            _viewModel = new SalesViewModel(saleService, logger, undoRedoService);
             DataContext = _viewModel;
 
             // Subscribe to events
