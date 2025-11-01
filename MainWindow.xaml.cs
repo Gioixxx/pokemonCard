@@ -1,16 +1,22 @@
 using PokemonCardManager.Views;
+using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace PokemonCardManager
 {
     public partial class MainWindow : Window
     {
-        public MainWindow()
+        private readonly IServiceProvider _serviceProvider;
+
+        public MainWindow(IServiceProvider serviceProvider)
         {
             InitializeComponent();
-            
+
+            _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+
             // Carica la vista inventario all'avvio
             NavigateToInventory(null, null);
 
@@ -52,27 +58,31 @@ namespace PokemonCardManager
             }
         }
 
-        private void NavigateToInventory(object sender, RoutedEventArgs e)
+        private void NavigateToInventory(object? sender, RoutedEventArgs? e)
         {
-            MainFrame.Navigate(new InventoryView());
+            var view = _serviceProvider.GetRequiredService<InventoryView>();
+            MainFrame.Navigate(view);
             SetActiveButton(btnInventory);
         }
 
-        private void NavigateToSales(object sender, RoutedEventArgs e)
+        private void NavigateToSales(object? sender, RoutedEventArgs? e)
         {
-            MainFrame.Navigate(new SalesView());
+            var view = _serviceProvider.GetRequiredService<SalesView>();
+            MainFrame.Navigate(view);
             SetActiveButton(btnSales);
         }
 
-        private void NavigateToDashboard(object sender, RoutedEventArgs e)
+        private void NavigateToDashboard(object? sender, RoutedEventArgs? e)
         {
-            MainFrame.Navigate(new DashboardView());
+            var view = _serviceProvider.GetRequiredService<DashboardView>();
+            MainFrame.Navigate(view);
             SetActiveButton(btnDashboard);
         }
 
-        private void NavigateToSettings(object sender, RoutedEventArgs e)
+        private void NavigateToSettings(object? sender, RoutedEventArgs? e)
         {
-            MainFrame.Navigate(new SettingsView());
+            var view = _serviceProvider.GetRequiredService<SettingsView>();
+            MainFrame.Navigate(view);
             SetActiveButton(btnSettings);
         }
 

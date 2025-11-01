@@ -9,14 +9,16 @@ namespace PokemonCardManager.Views
     public partial class SettingsView : Page
     {
         private readonly IDataExportService _dataExportService;
+        private readonly ILogger _logger;
 
-        public SettingsView()
+        public SettingsView(IDataExportService dataExportService, ILogger logger)
         {
             InitializeComponent();
 
-            // In un'applicazione reale, questo verrebbe iniettato
-            var dbContext = App.ServiceProvider?.GetService<Data.ApplicationDbContext>();
-            _dataExportService = new DataExportService(dbContext!);
+            _dataExportService = dataExportService ?? throw new System.ArgumentNullException(nameof(dataExportService));
+            _logger = logger ?? throw new System.ArgumentNullException(nameof(logger));
+
+            _logger.LogDebug("SettingsView initialized");
         }
 
         private async void ExportCardsButton_Click(object sender, RoutedEventArgs e)

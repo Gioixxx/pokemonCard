@@ -4,6 +4,7 @@ using LiveChartsCore.SkiaSharpView.Painting;
 using PokemonCardManager.Data;
 using PokemonCardManager.Services;
 using SkiaSharp;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Controls;
@@ -15,21 +16,22 @@ namespace PokemonCardManager.Views
     {
         private readonly ICardService _cardService;
         private readonly ISaleService _saleService;
+        private readonly ILogger _logger;
 
         public ISeries[] PieSeries { get; set; }
         public ISeries[] BarSeries { get; set; }
         public Axis[] XAxes { get; set; }
         public Axis[] YAxes { get; set; }
 
-        public DashboardView()
+        public DashboardView(ICardService cardService, ISaleService saleService, ILogger logger)
         {
             InitializeComponent();
 
-            // In un'applicazione reale, questo verrebbe iniettato
-            var dbContext = App.ServiceProvider?.GetService<ApplicationDbContext>();
-            _cardService = new CardService(dbContext!);
-            _saleService = new SaleService(dbContext!);
+            _cardService = cardService ?? throw new ArgumentNullException(nameof(cardService));
+            _saleService = saleService ?? throw new ArgumentNullException(nameof(saleService));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
+            _logger.LogDebug("DashboardView initialized");
             LoadDashboardData();
             DataContext = this;
         }

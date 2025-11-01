@@ -11,15 +11,17 @@ namespace PokemonCardManager.Services
     public class PokeApiService : IPokeApiService
     {
         private readonly HttpClient _httpClient;
+        private readonly ILogger _logger;
         private const string BaseUrl = "https://pokeapi.co/api/v2/";
         private readonly JsonSerializerOptions _jsonOptions;
 
-        public PokeApiService(HttpClient httpClient)
+        public PokeApiService(HttpClient httpClient, ILogger logger)
         {
             _httpClient = httpClient;
+            _logger = logger;
             _httpClient.BaseAddress = new Uri(BaseUrl);
             _httpClient.Timeout = TimeSpan.FromSeconds(30);
-            
+
             _jsonOptions = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true,
@@ -30,38 +32,91 @@ namespace PokemonCardManager.Services
         public async Task<PokemonDto?> GetPokemonByNameAsync(string name)
         {
             if (string.IsNullOrWhiteSpace(name))
+            {
+                _logger.LogWarning("GetPokemonByNameAsync called with empty name");
                 return null;
+            }
 
             try
             {
+                _logger.LogDebug($"Fetching Pokemon data for: {name}");
                 var response = await _httpClient.GetAsync($"pokemon/{name.ToLowerInvariant()}");
-                
+
                 if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogWarning($"PokeAPI returned status {response.StatusCode} for Pokemon: {name}");
                     return null;
+                }
 
                 var jsonString = await response.Content.ReadAsStringAsync();
-                return JsonSerializer.Deserialize<PokemonDto>(jsonString, _jsonOptions);
+                var pokemon = JsonSerializer.Deserialize<PokemonDto>(jsonString, _jsonOptions);
+                _logger.LogInformation($"Successfully fetched Pokemon data for: {name}");
+                return pokemon;
             }
-            catch (Exception)
+            catch (HttpRequestException ex)
             {
+                _logger.LogError($"Network error while fetching Pokemon '{name}': {ex.Message}", ex);
+                return null;
+            }
+            catch (TaskCanceledException ex)
+            {
+                _logger.LogError($"Request timeout while fetching Pokemon '{name}': {ex.Message}", ex);
+                return null;
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogError($"Failed to parse JSON response for Pokemon '{name}': {ex.Message}", ex);
+                return null;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Unexpected error while fetching Pokemon '{name}': {ex.Message}", ex);
                 return null;
             }
         }
 
         public async Task<PokemonDto?> GetPokemonByIdAsync(int id)
         {
+            if (id <= 0)
+            {
+                _logger.LogWarning($"GetPokemonByIdAsync called with invalid ID: {id}");
+                return null;
+            }
+
             try
             {
+                _logger.LogDebug($"Fetching Pokemon data for ID: {id}");
                 var response = await _httpClient.GetAsync($"pokemon/{id}");
-                
+
                 if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogWarning($"PokeAPI returned status {response.StatusCode} for Pokemon ID: {id}");
                     return null;
+                }
 
                 var jsonString = await response.Content.ReadAsStringAsync();
-                return JsonSerializer.Deserialize<PokemonDto>(jsonString, _jsonOptions);
+                var pokemon = JsonSerializer.Deserialize<PokemonDto>(jsonString, _jsonOptions);
+                _logger.LogInformation($"Successfully fetched Pokemon data for ID: {id}");
+                return pokemon;
             }
-            catch (Exception)
+            catch (HttpRequestException ex)
             {
+                _logger.LogError($"Network error while fetching Pokemon ID '{id}': {ex.Message}", ex);
+                return null;
+            }
+            catch (TaskCanceledException ex)
+            {
+                _logger.LogError($"Request timeout while fetching Pokemon ID '{id}': {ex.Message}", ex);
+                return null;
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogError($"Failed to parse JSON response for Pokemon ID '{id}': {ex.Message}", ex);
+                return null;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Unexpected error while fetching Pokemon ID '{id}': {ex.Message}", ex);
                 return null;
             }
         }
@@ -69,20 +124,45 @@ namespace PokemonCardManager.Services
         public async Task<PokemonSpeciesDto?> GetPokemonSpeciesByNameAsync(string name)
         {
             if (string.IsNullOrWhiteSpace(name))
+            {
+                _logger.LogWarning("GetPokemonSpeciesByNameAsync called with empty name");
                 return null;
+            }
 
             try
             {
+                _logger.LogDebug($"Fetching Pokemon species data for: {name}");
                 var response = await _httpClient.GetAsync($"pokemon-species/{name.ToLowerInvariant()}");
-                
+
                 if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogWarning($"PokeAPI returned status {response.StatusCode} for species: {name}");
                     return null;
+                }
 
                 var jsonString = await response.Content.ReadAsStringAsync();
-                return JsonSerializer.Deserialize<PokemonSpeciesDto>(jsonString, _jsonOptions);
+                var species = JsonSerializer.Deserialize<PokemonSpeciesDto>(jsonString, _jsonOptions);
+                _logger.LogInformation($"Successfully fetched species data for: {name}");
+                return species;
             }
-            catch (Exception)
+            catch (HttpRequestException ex)
             {
+                _logger.LogError($"Network error while fetching species '{name}': {ex.Message}", ex);
+                return null;
+            }
+            catch (TaskCanceledException ex)
+            {
+                _logger.LogError($"Request timeout while fetching species '{name}': {ex.Message}", ex);
+                return null;
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogError($"Failed to parse JSON response for species '{name}': {ex.Message}", ex);
+                return null;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Unexpected error while fetching species '{name}': {ex.Message}", ex);
                 return null;
             }
         }
@@ -91,18 +171,39 @@ namespace PokemonCardManager.Services
         {
             try
             {
+                _logger.LogDebug($"Fetching Pokemon list with limit={limit}, offset={offset}");
                 var response = await _httpClient.GetAsync($"pokemon?limit={limit}&offset={offset}");
-                
+
                 if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogWarning($"PokeAPI returned status {response.StatusCode} for Pokemon list");
                     return new List<NamedApiResourceDto>();
+                }
 
                 var jsonString = await response.Content.ReadAsStringAsync();
                 var result = JsonSerializer.Deserialize<ApiResourceListDto>(jsonString, _jsonOptions);
-                
+                _logger.LogInformation($"Successfully fetched {result?.Results?.Count ?? 0} Pokemon from list");
+
                 return result?.Results ?? new List<NamedApiResourceDto>();
             }
-            catch (Exception)
+            catch (HttpRequestException ex)
             {
+                _logger.LogError($"Network error while fetching Pokemon list: {ex.Message}", ex);
+                return new List<NamedApiResourceDto>();
+            }
+            catch (TaskCanceledException ex)
+            {
+                _logger.LogError($"Request timeout while fetching Pokemon list: {ex.Message}", ex);
+                return new List<NamedApiResourceDto>();
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogError($"Failed to parse JSON response for Pokemon list: {ex.Message}", ex);
+                return new List<NamedApiResourceDto>();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Unexpected error while fetching Pokemon list: {ex.Message}", ex);
                 return new List<NamedApiResourceDto>();
             }
         }

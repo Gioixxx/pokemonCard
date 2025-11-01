@@ -13,17 +13,18 @@ namespace PokemonCardManager.Views
     public partial class InventoryView : Page
     {
         private readonly ICardService _cardService;
+        private readonly ILogger _logger;
         private ObservableCollection<Card> Cards { get; set; }
         private Card selectedCard;
 
-        public InventoryView()
+        public InventoryView(ICardService cardService, ILogger logger)
         {
             InitializeComponent();
 
-            // In un'applicazione reale, questo verrebbe iniettato
-            var dbContext = App.ServiceProvider?.GetService<ApplicationDbContext>();
-            _cardService = new CardService(dbContext!);
+            _cardService = cardService ?? throw new ArgumentNullException(nameof(cardService));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
+            _logger.LogDebug("InventoryView initialized");
             LoadCards();
             UpdateSummary();
         }

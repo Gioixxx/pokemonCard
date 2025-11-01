@@ -22,12 +22,15 @@ namespace PokemonCardManager
 
         private void ConfigureServices(ServiceCollection services)
         {
+            // Registrazione del logger
+            services.AddSingleton<Services.ILogger, SerilogLogger>();
+
             // Configurazione del database
             string dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "PokemonCardManager", "pokemoncards.db");
-            
+
             // Assicurati che la directory esista
             Directory.CreateDirectory(Path.GetDirectoryName(dbPath));
-            
+
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlite($"Data Source={dbPath}"));
 
@@ -42,6 +45,13 @@ namespace PokemonCardManager
 
             // Registrazione delle viste e viewmodel
             services.AddSingleton<MainWindow>();
+            services.AddTransient<Views.InventoryView>();
+            services.AddTransient<Views.SalesView>();
+            services.AddTransient<Views.DashboardView>();
+            services.AddTransient<Views.SettingsView>();
+
+            // Register IServiceProvider itself for MainWindow
+            services.AddSingleton<IServiceProvider>(sp => sp);
         }
 
         protected override void OnStartup(StartupEventArgs e)

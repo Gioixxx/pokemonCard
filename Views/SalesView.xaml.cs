@@ -13,16 +13,17 @@ namespace PokemonCardManager.Views
     public partial class SalesView : Page
     {
         private readonly ISaleService _saleService;
+        private readonly ILogger _logger;
         private ObservableCollection<Sale> Sales { get; set; }
 
-        public SalesView()
+        public SalesView(ISaleService saleService, ILogger logger)
         {
             InitializeComponent();
 
-            // In un'applicazione reale, questo verrebbe iniettato
-            var dbContext = App.ServiceProvider?.GetService<ApplicationDbContext>();
-            _saleService = new SaleService(dbContext!);
+            _saleService = saleService ?? throw new ArgumentNullException(nameof(saleService));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
+            _logger.LogDebug("SalesView initialized");
             LoadSales();
             UpdateSummary();
         }

@@ -19,18 +19,20 @@ namespace PokemonCardManager.Views
         private bool isEditMode = false;
         private readonly IPokeApiService? _pokeApiService;
         private readonly PokemonSetService? _setService;
+        private readonly ILogger? _logger;
 
         public CardDialog()
         {
             InitializeComponent();
             CardData = new Card();
             dpPurchaseDate.SelectedDate = DateTime.Today;
-            
+
             // Recupera i servizi dal DI container
             if (App.ServiceProvider != null)
             {
                 _pokeApiService = App.ServiceProvider.GetService(typeof(IPokeApiService)) as IPokeApiService;
                 _setService = App.ServiceProvider.GetService(typeof(PokemonSetService)) as PokemonSetService;
+                _logger = App.ServiceProvider.GetService(typeof(ILogger)) as ILogger;
             }
 
             // Imposta focus sul primo campo
@@ -46,14 +48,15 @@ namespace PokemonCardManager.Views
             CardData = card;
             isEditMode = true;
             txtTitle.Text = "Modifica Carta";
-            
+
             // Recupera i servizi dal DI container
             if (App.ServiceProvider != null)
             {
                 _pokeApiService = App.ServiceProvider.GetService(typeof(IPokeApiService)) as IPokeApiService;
                 _setService = App.ServiceProvider.GetService(typeof(PokemonSetService)) as PokemonSetService;
+                _logger = App.ServiceProvider.GetService(typeof(ILogger)) as ILogger;
             }
-            
+
             LoadCardData();
 
             // Imposta focus sul primo campo
@@ -266,9 +269,25 @@ namespace PokemonCardManager.Views
                     await LoadPokemonImageAsync(pokemon.Sprites.FrontDefault);
                 }
             }
+            catch (HttpRequestException ex)
+            {
+                _logger?.LogError($"Network error while searching Pokemon '{pokemonName}': {ex.Message}", ex);
+                MessageBox.Show($"Errore di connessione durante la ricerca.\nVerifica la tua connessione internet.",
+                    "Errore di Rete", MessageBoxButton.OK, MessageBoxImage.Error);
+                pokemonImageContainer.Visibility = Visibility.Collapsed;
+            }
+            catch (TaskCanceledException ex)
+            {
+                _logger?.LogError($"Request timeout while searching Pokemon '{pokemonName}': {ex.Message}", ex);
+                MessageBox.Show("La richiesta ha impiegato troppo tempo.\nRiprova tra qualche istante.",
+                    "Timeout", MessageBoxButton.OK, MessageBoxImage.Warning);
+                pokemonImageContainer.Visibility = Visibility.Collapsed;
+            }
             catch (Exception ex)
             {
-                MessageBox.Show($"Errore durante la ricerca: {ex.Message}", "Errore", MessageBoxButton.OK, MessageBoxImage.Error);
+                _logger?.LogError($"Unexpected error while searching Pokemon '{pokemonName}': {ex.Message}", ex);
+                MessageBox.Show($"Errore imprevisto durante la ricerca: {ex.Message}",
+                    "Errore", MessageBoxButton.OK, MessageBoxImage.Error);
                 pokemonImageContainer.Visibility = Visibility.Collapsed;
             }
             finally
@@ -286,7 +305,7 @@ namespace PokemonCardManager.Views
                 {
                     var response = await httpClient.GetByteArrayAsync(imageUrl);
                     var bitmap = new BitmapImage();
-                    
+
                     using (var stream = new MemoryStream(response))
                     {
                         bitmap.BeginInit();
@@ -295,13 +314,19 @@ namespace PokemonCardManager.Views
                         bitmap.EndInit();
                         bitmap.Freeze();
                     }
-                    
+
                     imgPokemon.Source = bitmap;
+                    _logger?.LogDebug($"Successfully loaded Pokemon image from: {imageUrl}");
                 }
             }
-            catch (Exception)
+            catch (HttpRequestException ex)
             {
-                // Ignora errori di caricamento immagine
+                _logger?.LogWarning($"Failed to load Pokemon image from {imageUrl}: {ex.Message}");
+                imgPokemon.Source = null;
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogWarning($"Unexpected error loading Pokemon image: {ex.Message}");
                 imgPokemon.Source = null;
             }
         }
